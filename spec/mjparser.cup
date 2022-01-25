@@ -103,8 +103,7 @@ terminal RBRACE;
 
 
 nonterminal rs.etf.pp1.symboltable.concepts.Obj  Program, ProgramName, Designator, DesignatorList, MethodTypeName, NewFactorExprOptional;
-nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement, Matched, Unmatched, OptionalActPars, DesignatorElement;
-nonterminal DesignatorStatement;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement, Matched, Unmatched, OptionalActPars, DesignatorElement, Variable;
 nonterminal GroupDeclList;
 nonterminal GroupDecl;
 nonterminal ConstDecl;
@@ -114,7 +113,6 @@ nonterminal ConstName;
 nonterminal ConstDeclVal;
 nonterminal VarDecl;
 nonterminal VarDeclList;
-nonterminal Variable;
 nonterminal RecordDecl;
 nonterminal MethodDecl;
 nonterminal StatementList;
@@ -124,10 +122,9 @@ nonterminal MethodVarList;
 nonterminal Mulop;
 nonterminal Addop;
 nonterminal Relop;
-nonterminal Assignop;
 nonterminal Label;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, DesignatorFunctionCall, MulopList, Factor, AddopList;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct OptionalMinus, Expr, CondFact, CondTerm, CondTermList, Condition, ConditionList;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, DesignatorFunctionCall, MulopList, Factor, AddopList, DesignatorStatement;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct OptionalMinus, Expr, CondFact, CondTerm, CondTermList, Condition, ConditionList, Assignop, OptionalSquareMethodFormPars ;
 nonterminal ActPars;
 nonterminal ActParsList;
 nonterminal Statements;
@@ -135,6 +132,7 @@ nonterminal OptionalPrintParam ;
 nonterminal MethodDeclList;
 nonterminal OptionalSquareDesignator;
 nonterminal VarDeclListModif;
+nonterminal DoStatementStart;
 
 
 
@@ -210,14 +208,14 @@ MethodDecl ::= (MethodDecl) MethodTypeName LPAREN FormPars FormParsList RPAREN M
 MethodTypeName ::= (MethodDeclTypeName) Type:methodTypeName IDENT:methodName
 				| (MethodDeclVoidName) VOID IDENT:methodName
 				;
-FormPars ::= (FormParsOnlyIdent) Type:nameForm IDENT
+FormPars ::= (FormParsDecl) Type:typeForm IDENT:nameForm OptionalSquareMethodFormPars
 				| 
-				(FormParsWithSquareBraces) Type:nameForm IDENT LSQUAREB RSQUAREB
-				|
-				error SEMI:l {: parser.report_error("Sintaksa greska na liniji " + lleft, null); :}
-				| 
-				(NoFormPars) /* epsilon */
- 				;
+				(NoFormPars) /* epsilon *
+				;
+OptionalSquareMethodFormPars ::= (SquareMethodFormPars)	LSQUAREB RSQUAREB
+								|
+								(NoSquareMethodFormPars) /* epsilon */		
+								;
 FormParsList ::=
 				(FormParsAddList) FormParsList COMMA FormPars
 				|
@@ -358,15 +356,17 @@ Matched ::= (DesignatorStatement1) DesignatorStatement SEMI
 		   | 
 		   (StatementsDecl) Statements
 		   |
-		   (BreadStatment) BREAK SEMI
+		   (BreakStatment) BREAK SEMI
 		   |
 		   (ContinueStatament) CONTINUE SEMI
 		   |
-		   (DoStatement) DO Statement WHILE LPAREN Condition RPAREN SEMI
+		   (DoStatement) DoStatementStart Statement WHILE LPAREN Condition RPAREN SEMI
 		   |
 		   error SEMI:l {: parser.report_error("Sintaksa greska na liniji " + lleft, null); :}
 		   ;
 
+
+DoStatementStart ::= (DoStatementStart) DO;
 		   
 OptionalPrintParam ::= (OptionalPrintParamm) COMMA NUMBER
 	|

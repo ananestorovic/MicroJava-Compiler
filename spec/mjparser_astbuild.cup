@@ -103,8 +103,7 @@ terminal RBRACE;
 
 
 nonterminal rs.etf.pp1.symboltable.concepts.Obj  Program, ProgramName, Designator, DesignatorList, MethodTypeName, NewFactorExprOptional;
-nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement, Matched, Unmatched, OptionalActPars, DesignatorElement;
-nonterminal DesignatorStatement DesignatorStatement;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement, Matched, Unmatched, OptionalActPars, DesignatorElement, Variable;
 nonterminal GroupDeclList GroupDeclList;
 nonterminal GroupDecl GroupDecl;
 nonterminal ConstDecl ConstDecl;
@@ -114,7 +113,6 @@ nonterminal ConstName ConstName;
 nonterminal ConstDeclVal ConstDeclVal;
 nonterminal VarDecl VarDecl;
 nonterminal VarDeclList VarDeclList;
-nonterminal Variable Variable;
 nonterminal RecordDecl RecordDecl;
 nonterminal MethodDecl MethodDecl;
 nonterminal StatementList StatementList;
@@ -124,10 +122,9 @@ nonterminal MethodVarList MethodVarList;
 nonterminal Mulop Mulop;
 nonterminal Addop Addop;
 nonterminal Relop Relop;
-nonterminal Assignop Assignop;
 nonterminal Label Label;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, DesignatorFunctionCall, MulopList, Factor, AddopList;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct OptionalMinus, Expr, CondFact, CondTerm, CondTermList, Condition, ConditionList;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, DesignatorFunctionCall, MulopList, Factor, AddopList, DesignatorStatement;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct OptionalMinus, Expr, CondFact, CondTerm, CondTermList, Condition, ConditionList, Assignop, OptionalSquareMethodFormPars ;
 nonterminal ActPars ActPars;
 nonterminal ActParsList ActParsList;
 nonterminal Statements Statements;
@@ -135,6 +132,7 @@ nonterminal OptionalPrintParam OptionalPrintParam ;
 nonterminal MethodDeclList MethodDeclList;
 nonterminal OptionalSquareDesignator OptionalSquareDesignator;
 nonterminal VarDeclListModif VarDeclListModif;
+nonterminal DoStatementStart DoStatementStart;
 
 
 
@@ -210,14 +208,14 @@ MethodDecl ::= (MethodDecl) MethodTypeName:M1 LPAREN FormPars:F2 FormParsList:F3
 MethodTypeName ::= (MethodDeclTypeName) Type:methodTypeName IDENT:methodName {: RESULT=new MethodDeclTypeName(methodTypeName, methodName); RESULT.setLine(methodTypeNameleft); :}
 				| (MethodDeclVoidName) VOID IDENT:methodName {: RESULT=new MethodDeclVoidName(methodName); RESULT.setLine(methodNameleft); :}
 				;
-FormPars ::= (FormParsOnlyIdent) Type:nameForm IDENT:I1 {: RESULT=new FormParsOnlyIdent(nameForm, I1); RESULT.setLine(nameFormleft); :}
+FormPars ::= (FormParsDecl) Type:typeForm IDENT:nameForm OptionalSquareMethodFormPars:O1 {: RESULT=new FormParsDecl(typeForm, nameForm, O1); RESULT.setLine(typeFormleft); :}
 				| 
-				(FormParsWithSquareBraces) Type:nameForm IDENT:I1 LSQUAREB RSQUAREB {: RESULT=new FormParsWithSquareBraces(nameForm, I1); RESULT.setLine(nameFormleft); :}
-				|
-				error SEMI:l {: parser.report_error("Sintaksa greska na liniji " + lleft, null); :} {: RESULT=new FormParsDerived1(); :}
-				| 
-				(NoFormPars) {: RESULT=new NoFormPars(); :} /* epsilon */
- 				;
+				(NoFormPars) {: RESULT=new NoFormPars(); :} /* epsilon *
+				;
+OptionalSquareMethodFormPars ::= (SquareMethodFormPars)	LSQUAREB RSQUAREB
+								|
+								(NoSquareMethodFormPars) /* epsilon */		
+								;
 FormParsList ::=
 				(FormParsAddList) FormParsList:F1 COMMA FormPars:F2 {: RESULT=new FormParsAddList(F1, F2); RESULT.setLine(F1left); :}
 				|
@@ -358,15 +356,17 @@ Matched ::= (DesignatorStatement1) DesignatorStatement:D1 SEMI {: RESULT=new Des
 		   | 
 		   (StatementsDecl) Statements:S1 {: RESULT=new StatementsDecl(S1); RESULT.setLine(S1left); :}
 		   |
-		   (BreadStatment) BREAK SEMI {: RESULT=new BreadStatment(); :}
+		   (BreakStatment) BREAK SEMI {: RESULT=new BreakStatment(); :}
 		   |
 		   (ContinueStatament) CONTINUE SEMI {: RESULT=new ContinueStatament(); :}
 		   |
-		   (DoStatement) DO Statement:S1 WHILE LPAREN Condition:C2 RPAREN SEMI {: RESULT=new DoStatement(S1, C2); RESULT.setLine(S1left); :}
+		   (DoStatement) DoStatementStart:D1 Statement:S2 WHILE LPAREN Condition:C3 RPAREN SEMI {: RESULT=new DoStatement(D1, S2, C3); RESULT.setLine(D1left); :}
 		   |
 		   error SEMI:l {: parser.report_error("Sintaksa greska na liniji " + lleft, null); :} {: RESULT=new MatchedDerived1(); :}
 		   ;
 
+
+DoStatementStart ::= (DoStatementStart) DO {: RESULT=new DoStatementStart(); :};
 		   
 OptionalPrintParam ::= (OptionalPrintParamm) COMMA NUMBER:N1 {: RESULT=new OptionalPrintParamm(N1); RESULT.setLine(N1left); :}
 	|

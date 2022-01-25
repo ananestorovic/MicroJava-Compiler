@@ -1,6 +1,6 @@
 // generated with ast extension for cup
 // version 0.8
-// 24/0/2022 5:38:1
+// 25/0/2022 7:22:29
 
 
 package rs.ac.bg.etf.pp1.ast;
@@ -9,6 +9,8 @@ public class Assignop implements SyntaxNode {
 
     private SyntaxNode parent;
     private int line;
+    public rs.etf.pp1.symboltable.concepts.Struct struct = null;
+
     public Assignop () {
     }
 

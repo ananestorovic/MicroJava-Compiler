@@ -1,7 +1,9 @@
 package rs.ac.bg.etf.pp1;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 
@@ -19,6 +21,13 @@ public class SemanticPass extends VisitorAdaptor {
 	int nVars;
 	public static Struct boolType;
 	List<Expr> listOfActParams = new ArrayList<>();
+	int doStatement = 0;
+	Struct methodReturnType = Tab.noType;
+	Boolean haveReturn = false;
+	List<Obj> currentMethodParams = new ArrayList<>();
+	Struct typeGlobalVar = null;
+	//List<Obj> currentMethodParams = new ArrayList<>();
+
 
 	
 	Logger log = Logger.getLogger(getClass());
@@ -47,15 +56,8 @@ public class SemanticPass extends VisitorAdaptor {
 	}
 
 	
-	public void visit(VariableDecl varDecl){
-		varDeclCount++;
-		//report_info("Deklarisana promenljiva "+ varDecl.getVarName(), varDecl);
-		//Obj varNode = Tab.insert(Obj.Var, varDecl.getVarName(), varDecl.getType().struct);
-	}
 	
-    public void visit(PrintStmt print) {
-		printCallCount++;
-	}
+	
     
     public void visit(ProgramName programName){
     	programName.obj = Tab.insert(Obj.Prog, programName.getProgramName(), Tab.noType);
@@ -79,6 +81,10 @@ nVars = Tab.currentScope.getnVars();
 		Tab.closeScope();
 	}
     
+    
+    
+    //Type
+    
     public void visit(Type type){
     	Obj typeNode = Tab.find(type.getTypeName());
     	if(typeNode == Tab.noObj){
@@ -94,6 +100,9 @@ nVars = Tab.currentScope.getnVars();
     	}
     }
    
+    
+    
+    
 
     public void visit(MethodDeclTypeName methodTypeName){
     	currentMethod = Tab.insert(Obj.Meth, methodTypeName.getMethodName(), methodTypeName.getType().struct);
@@ -263,42 +272,272 @@ nVars = Tab.currentScope.getnVars();
     public void visit(Expr expr) {
     	expr.struct=expr.getAddopList().struct;
     }
-    //
- 
-    public void visit(OptionalActParsDecl optionalActParsDecl) {
+    
+    
+    
+    
+    
+    
+    //ActPars
+
+    public void visit(OptionalActParsDecl actuals) {
     	if(currentMethod == null) {
-			report_error("Greska: nema metode koja se trenutno koristi!", null);
+			report_error("Greska: ne postoji metoda!", actuals);
     		return;
     	}
     	
-    	/*
-    	 * Collection<Obj> real_parameters_from_symbol_table = Symbol_Table.find(current_method_we_are_using.getName()).getLocalSymbols();
-    	ArrayList<Obj> list_helper = new ArrayList<>(real_parameters_from_symbol_table);
+    	Collection<Obj> parametersFromSymTab = Tab.find(currentMethod.getName()).getLocalSymbols();
+    	ArrayList<Obj> listParametersFromSymTab  = new ArrayList<>(parametersFromSymTab);
     	
-    	if(list_of_actual_parameters.size()!=current_method_we_are_using.getLevel()) {
-    		report_error("NOT THE SAME NUMBER OF ARGUMENTS (from Actuals) !", actuals);
-    		return;a
+    	if(listOfActParams.size()!=currentMethod.getLevel()) {
+    		report_error("Greska: Broj formalnih i stvarnih argumenata metode mora biti isti!", actuals);
+    		return;
     	}
     	
-    	for(int i=0; i<list_of_actual_parameters.size(); i++) {
-    		if(list_of_actual_parameters.get(i).struct.getKind() != list_helper.get(i).getType().getKind()) {
-    			report_error("NOT THE SAME TYPE OF ARGUMENTS AT ARGUMENT (from Actuals) !" + (i+1), actuals);
-    		}
-    		else {
-    			report_info("TYPE -> " + getTypeAsString(list_of_actual_parameters.get(i).struct.getKind()) + " <- AND -> " + getTypeAsString(list_helper.get(i).getType().getKind()) + " <-", actuals);
+    	for(int i=0; i<listOfActParams.size(); i++) {
+    		if(listOfActParams.get(i).struct.getKind() != listParametersFromSymTab.get(i).getType().getKind()) {
+    			report_error("Greska: Tip svakog stvarnog argumenta mora biti kompatibilan pri dodeli sa tipom svakog formalnog "
+    					+ "argumenta na odgovarajucoj poziciji!", actuals);
     		}
     	}
     	
-    	list_of_function_calls.remove(list_of_function_calls.size()-1); // remove the current method used from the stack of methods
-    	if(list_of_function_calls.size()>0) // if there is more methods left 
-    		current_method_we_are_using = list_of_function_calls.get(list_of_function_calls.size()-1); // get the previous one
     	
-    	stack.remove(stack.size()-1); // remove the current list of actual parameters from the stack of actual parameters
-    	if(stack.size()>0) // if there is more lists of actual parameters
-    		list_of_actual_parameters = stack.get(stack.size()-1); // get the previous one
+    	//OVDE JE TREBALO NESTO OKO STEKA, NEMAM POJMA STA
     }
-    	 */
+    
+    public void visit(NoOptionalActParsDecl noActuals) {
+    	Obj methObj = Tab.find(currentMethod.getName());
+    	
+    	if(methObj == Tab.noObj) {
+    		report_error("Greska: ne postoji metoda!", noActuals);
+    		return;
+    	}
+    	else if(methObj.getLevel() > 0) {
+    		report_error("Greska: Tip svakog stvarnog argumenta mora biti kompatibilan pri dodeli sa tipom svakog formalnog "
+					+ "argumenta na odgovarajucoj poziciji!", noActuals);
+    		return;
+    	}
     }
+  
+    
+    
+    
+    
+    
+    //SingleStatement
+    
+    public void visit(DoStatementStart doStatementStart) {
+		doStatement++;
+	}
+    
+    public void visit(DoStatement doStatementDecl) {
+    	doStatement--;
+    	
+    	if(doStatementDecl.getCondition().struct != boolType) {
+    		report_error("Greska: Uslovni izraz Condition mora biti tipa bool.", doStatementDecl);
+    	}
+	}
+    
+
+	public void visit(BreakStatment breakStatment) {
+		if (doStatement == 0) {
+			report_error("Greska: Iskaz break se moze koristiti samo unutar do-while petlje", breakStatment);
+		}
+		
+		//treba li da naznacim neki prekid ili da dekrementiram do?
+	}
+	
+
+	public void visit(ContinueStatament continueStatament) {
+		if (doStatement == 0) {
+			report_error("Greska: Iskaz continue se moze koristiti samo unutar do-while petlje", continueStatament);
+		}
+		
+		//treba li da naznacim neki prekid ili da dekrementiram do?
+	}
+
+	public void visit(ReturnExpr returnExpr) {
+		if (!returnExpr.getExpr().struct.equals(methodReturnType)) {
+			report_error("Greska: Tip neterminala Expr mora biti ekvivalentan povratnom tipu tekuce metode/ globalne funkcije", returnExpr);
+		}
+		haveReturn = true;
+	}
+
+	public void visit(ReturnNoExpr returnNoExpr) {
+		if (!methodReturnType.equals(Tab.noType)) {
+			report_error("Greska: Tip neterminala Expr mora biti ekvivalentan povratnom tipu tekuce metode/ globalne funkcije (ReturnNoExpr)", returnNoExpr);
+		}
+		//TREBA LI NESTO ZA VOID??
+		haveReturn = true;
+	}
+	
+	public void visit(ReadStatement readStatement) {
+		Obj designator = Tab.find(((DesignatorListDecl)readStatement.getDesignator()).getDesignatorName()); //NZM STO JE TRAZIO KAST
+		if (!(designator.getKind() == Obj.Fld || designator.getKind() == Obj.Elem || designator.getKind() == Obj.Var)) {
+			report_error("Greska:  Designator mora oznacavati promenljivu, element niza ili polje unutar objekta.\r\n"
+					+ "", readStatement);
+		}
+		
+		if(!(designator.getType().getKind() ==Struct.Int || designator.getType().getKind() ==Struct.Char 
+				|| designator.getType().getKind() ==Struct.Bool)) {
+			report_error("Greska:   Designator mora biti tipa int, char ili bool", readStatement);
+		}
+	}
+
+	public void visit(PrintStmt printSatement) {
+		printCallCount++;
+		
+		if(!(printSatement.getExpr().struct.getKind()==Struct.Int || printSatement.getExpr().struct.getKind()==Struct.Char
+				|| printSatement.getExpr().struct.getKind()==Struct.Bool))
+			report_error("Greska: Expr kod printa mora biti tipa int, char ili bool", printSatement);
+	}
+	
+	public void visit(MatchedStatement statementIfElse) {
+	if(statementIfElse.getCondition().struct!= boolType) {
+		report_error("Greska: Tip uslovnog izraza Condition mora biti bool. (IfElse)", statementIfElse);
+	}
+	}
+    
+	
+	
+	
+	
+	
+	//DesignatorStatement
+	
+	public void visit(Inc inc) {
+		
+		Obj designator = Tab.find(((DesignatorListDecl)inc.getDesignator()).getDesignatorName());
+		
+		if (!(designator.getKind() == Obj.Fld || designator.getKind() == Obj.Elem || designator.getKind() == Obj.Var)) {
+			report_error("Greska: Designator mora oznacavati promenljivu, element niza ili polje objekta unutrasnje klase", inc);
+		}
+		
+		if(designator.getType().getKind() != Struct.Int) {
+			report_error("Greska:  Designator mora biti tipa int.", inc);
+		}
+		
+		
+	}
+
+	public void visit(Dec dec) {
+		Obj designator = Tab.find(((DesignatorListDecl)dec.getDesignator()).getDesignatorName());
+		
+		if (!(designator.getKind() == Obj.Fld || designator.getKind() == Obj.Elem || designator.getKind() == Obj.Var)) {
+			report_error("Greska: Designator mora oznacavati promenljivu, element niza ili polje objekta unutrasnje klase", dec);
+		}
+		
+		if(designator.getType().getKind() != Struct.Int) {
+			report_error("Greska: Designator mora biti tipa int.", dec);
+		}
+		
+	}
+	
+	public void visit(Assignment assignment) {
+		
+		Obj designator = Tab.find(((DesignatorListDecl)assignment.getDesignator()).getDesignatorName());
+				
+    	Struct expresion = assignment.getExpr().struct;
+    	
+    	if(designator.getKind() != expresion.getKind()) {
+    		report_error("Greska: Tip neterminala Expr mora biti kompatibilan pri dodeli sa tipom neterminala Designator", assignment);
+    	}
+    	
+    	if (!(designator.getKind() == Obj.Fld || designator.getKind() == Obj.Elem || designator.getKind() == Obj.Var)) {
+			report_error("Greska: Designator mora oznacavati promenljivu, element niza ili polje unutar objekta", assignment);
+		}
+	}
+
+
+	
+	
+	
+	
+
+    
+    
+	
+	//FormPars
+	
+	public void visit(FormParsDecl formParsDecl) {
+	
+		Obj obj = Tab.find(formParsDecl.getNameForm());
+		
+		if (obj == Tab.noObj || obj.getLevel() == 0) {
+			Obj inserted = Tab.insert(Obj.Var, formParsDecl.getNameForm(),
+					formParsDecl.getOptionalSquareMethodFormPars().struct);
+			
+			inserted.setFpPos(Tab.currentScope.getnVars());
+			currentMethodParams.add(inserted);
+		} else {
+			errorDetected = true;
+			report_error("Greska: Vec je definisan ovaj form param", formParsDecl);
+		}
+	}
+	
+	
+////NE VIDIII MI OVE KLASE!!!!!!!!!!!!!!!!!!
+	
+//	public void visit(SquareMethodFormPars squareMethodFormPars) {
+//		squareMethodFormPars.struct = new Struct(Struct.Array, typeGlobalVar);
+//	}
+//
+//	public void visit(NoSquareMethodFormPars noSquareMethodFormPars) {
+//		noSquareMethodFormPars.struct = typeGlobalVar;
+//	}
+
+
+	
+	
+	
+	
+	
+//VarDecl
+	
+	public void visit(OnlyVariableDecl localVar) {
+		Obj obj = Tab.currentScope().findSymbol(localVar.getVarName());
+		if (obj == Tab.noObj) //ILI !=
+			report_error("Greska: Vec deklarisana!", localVar);
+
+		else {
+			if(typeGlobalVar!=localVar.obj.getType()) //NZM MOZE LI OVAKO
+				report_error("Greska: Los tip promenljive!", localVar);
+			else {
+
+				varDeclCount++;
+
+				localVar.obj = Tab.insert(Obj.Var, localVar.getVarName(), typeGlobalVar);
+				localVar.obj.getType().setElementType(Tab.noType);
+
+			}
+		}
+
+	}
+
+	public void visit(VariableDecl localArr) {
+		Obj obj = Tab.currentScope().findSymbol(localArr.getVarName());
+		if (obj == Tab.noObj)
+			report_error("Greska: Vec deklarisano!", localArr);
+		else {
+			if (typeGlobalVar!=localArr.obj.getType())
+				report_error("Greska: Los tip promenljive!", localArr);
+			else {
+
+				
+				localArr.obj = Tab.insert(Obj.Var, localArr.getVarName(), new Struct(Struct.Array));
+				localArr.obj.getType().setElementType(typeGlobalVar);
+
+			}
+		}
+	}   
+    
+    
+    
+    
+    
+    
+    
+    
     //
     public void visit(NoConditionListDecl noConditionList) {
     	noConditionList.struct=noConditionList.getCondTerm().struct;

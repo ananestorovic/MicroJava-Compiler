@@ -1,13 +1,13 @@
 // generated with ast extension for cup
 // version 0.8
-// 24/0/2022 5:38:1
+// 25/0/2022 7:22:29
 
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class FormParsDerived1 extends FormPars {
+public class BreakStatment extends Matched {
 
-    public FormParsDerived1 () {
+    public BreakStatment () {
     }
 
     public void accept(Visitor visitor) {
@@ -28,10 +28,10 @@ public class FormParsDerived1 extends FormPars {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("FormParsDerived1(\n");
+        buffer.append("BreakStatment(\n");
 
         buffer.append(tab);
-        buffer.append(") [FormParsDerived1]");
+        buffer.append(") [BreakStatment]");
         return buffer.toString();
     }
 }

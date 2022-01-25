@@ -1,13 +1,31 @@
 // generated with ast extension for cup
 // version 0.8
-// 24/0/2022 5:38:1
+// 25/0/2022 7:22:29
 
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class BreadStatment extends Matched {
+public class DoStatementStart implements SyntaxNode {
 
-    public BreadStatment () {
+    private SyntaxNode parent;
+    private int line;
+    public DoStatementStart () {
+    }
+
+    public SyntaxNode getParent() {
+        return parent;
+    }
+
+    public void setParent(SyntaxNode parent) {
+        this.parent=parent;
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public void setLine(int line) {
+        this.line=line;
     }
 
     public void accept(Visitor visitor) {
@@ -28,10 +46,10 @@ public class BreadStatment extends Matched {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("BreadStatment(\n");
+        buffer.append("DoStatementStart(\n");
 
         buffer.append(tab);
-        buffer.append(") [BreadStatment]");
+        buffer.append(") [DoStatementStart]");
         return buffer.toString();
     }
 }

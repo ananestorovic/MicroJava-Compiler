@@ -1,6 +1,6 @@
 // generated with ast extension for cup
 // version 0.8
-// 24/0/2022 5:38:1
+// 25/0/2022 7:22:29
 
 
 package rs.ac.bg.etf.pp1.ast;
@@ -18,6 +18,7 @@ public interface Visitor {
     public void visit(CondTermList CondTermList);
     public void visit(MulopList MulopList);
     public void visit(VarDeclListModif VarDeclListModif);
+    public void visit(OptionalSquareMethodFormPars OptionalSquareMethodFormPars);
     public void visit(Variable Variable);
     public void visit(StatementList StatementList);
     public void visit(ConstDeclVal ConstDeclVal);
@@ -40,8 +41,8 @@ public interface Visitor {
     public void visit(DesignatorStatement DesignatorStatement);
     public void visit(Statement Statement);
     public void visit(CondFact CondFact);
-    public void visit(DesignatorFunctionCall DesignatorFunctionCall);
     public void visit(DesignatorElement DesignatorElement);
+    public void visit(DesignatorFunctionCall DesignatorFunctionCall);
     public void visit(MethodDeclList MethodDeclList);
     public void visit(OptionalMinus OptionalMinus);
     public void visit(GroupDecl GroupDecl);
@@ -61,10 +62,11 @@ public interface Visitor {
     public void visit(OptionalPrintParamDerived2 OptionalPrintParamDerived2);
     public void visit(OptionalPrintParamDerived1 OptionalPrintParamDerived1);
     public void visit(OptionalPrintParamm OptionalPrintParamm);
+    public void visit(DoStatementStart DoStatementStart);
     public void visit(MatchedDerived1 MatchedDerived1);
     public void visit(DoStatement DoStatement);
     public void visit(ContinueStatament ContinueStatament);
-    public void visit(BreadStatment BreadStatment);
+    public void visit(BreakStatment BreakStatment);
     public void visit(StatementsDecl StatementsDecl);
     public void visit(MatchedStatement MatchedStatement);
     public void visit(ReturnNoExpr ReturnNoExpr);
@@ -125,9 +127,7 @@ public interface Visitor {
     public void visit(NoFormParsAddList NoFormParsAddList);
     public void visit(FormParsAddList FormParsAddList);
     public void visit(NoFormPars NoFormPars);
-    public void visit(FormParsDerived1 FormParsDerived1);
-    public void visit(FormParsWithSquareBraces FormParsWithSquareBraces);
-    public void visit(FormParsOnlyIdent FormParsOnlyIdent);
+    public void visit(FormParsDecl FormParsDecl);
     public void visit(MethodDeclVoidName MethodDeclVoidName);
     public void visit(MethodDeclTypeName MethodDeclTypeName);
     public void visit(MethodDecl MethodDecl);
