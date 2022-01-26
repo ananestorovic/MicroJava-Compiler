@@ -1,27 +1,27 @@
 // generated with ast extension for cup
 // version 0.8
-// 25/0/2022 7:22:29
+// 26/0/2022 7:30:43
 
 
 package rs.ac.bg.etf.pp1.ast;
 
 public class MethodDeclTypeName extends MethodTypeName {
 
-    private Type Type;
+    private ReturnType ReturnType;
     private String methodName;
 
-    public MethodDeclTypeName (Type Type, String methodName) {
-        this.Type=Type;
-        if(Type!=null) Type.setParent(this);
+    public MethodDeclTypeName (ReturnType ReturnType, String methodName) {
+        this.ReturnType=ReturnType;
+        if(ReturnType!=null) ReturnType.setParent(this);
         this.methodName=methodName;
     }
 
-    public Type getType() {
-        return Type;
+    public ReturnType getReturnType() {
+        return ReturnType;
     }
 
-    public void setType(Type Type) {
-        this.Type=Type;
+    public void setReturnType(ReturnType ReturnType) {
+        this.ReturnType=ReturnType;
     }
 
     public String getMethodName() {
@@ -37,16 +37,16 @@ public class MethodDeclTypeName extends MethodTypeName {
     }
 
     public void childrenAccept(Visitor visitor) {
-        if(Type!=null) Type.accept(visitor);
+        if(ReturnType!=null) ReturnType.accept(visitor);
     }
 
     public void traverseTopDown(Visitor visitor) {
         accept(visitor);
-        if(Type!=null) Type.traverseTopDown(visitor);
+        if(ReturnType!=null) ReturnType.traverseTopDown(visitor);
     }
 
     public void traverseBottomUp(Visitor visitor) {
-        if(Type!=null) Type.traverseBottomUp(visitor);
+        if(ReturnType!=null) ReturnType.traverseBottomUp(visitor);
         accept(visitor);
     }
 
@@ -55,8 +55,8 @@ public class MethodDeclTypeName extends MethodTypeName {
         buffer.append(tab);
         buffer.append("MethodDeclTypeName(\n");
 
-        if(Type!=null)
-            buffer.append(Type.toString("  "+tab));
+        if(ReturnType!=null)
+            buffer.append(ReturnType.toString("  "+tab));
         else
             buffer.append(tab+"  null");
         buffer.append("\n");

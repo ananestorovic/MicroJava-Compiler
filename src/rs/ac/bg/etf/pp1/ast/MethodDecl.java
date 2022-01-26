@@ -1,6 +1,6 @@
 // generated with ast extension for cup
 // version 0.8
-// 25/0/2022 7:22:29
+// 26/0/2022 7:30:43
 
 
 package rs.ac.bg.etf.pp1.ast;
@@ -10,18 +10,15 @@ public class MethodDecl implements SyntaxNode {
     private SyntaxNode parent;
     private int line;
     private MethodTypeName MethodTypeName;
-    private FormPars FormPars;
-    private FormParsList FormParsList;
+    private OptionalFormalParams OptionalFormalParams;
     private MethodVarList MethodVarList;
     private StatementList StatementList;
 
-    public MethodDecl (MethodTypeName MethodTypeName, FormPars FormPars, FormParsList FormParsList, MethodVarList MethodVarList, StatementList StatementList) {
+    public MethodDecl (MethodTypeName MethodTypeName, OptionalFormalParams OptionalFormalParams, MethodVarList MethodVarList, StatementList StatementList) {
         this.MethodTypeName=MethodTypeName;
         if(MethodTypeName!=null) MethodTypeName.setParent(this);
-        this.FormPars=FormPars;
-        if(FormPars!=null) FormPars.setParent(this);
-        this.FormParsList=FormParsList;
-        if(FormParsList!=null) FormParsList.setParent(this);
+        this.OptionalFormalParams=OptionalFormalParams;
+        if(OptionalFormalParams!=null) OptionalFormalParams.setParent(this);
         this.MethodVarList=MethodVarList;
         if(MethodVarList!=null) MethodVarList.setParent(this);
         this.StatementList=StatementList;
@@ -36,20 +33,12 @@ public class MethodDecl implements SyntaxNode {
         this.MethodTypeName=MethodTypeName;
     }
 
-    public FormPars getFormPars() {
-        return FormPars;
+    public OptionalFormalParams getOptionalFormalParams() {
+        return OptionalFormalParams;
     }
 
-    public void setFormPars(FormPars FormPars) {
-        this.FormPars=FormPars;
-    }
-
-    public FormParsList getFormParsList() {
-        return FormParsList;
-    }
-
-    public void setFormParsList(FormParsList FormParsList) {
-        this.FormParsList=FormParsList;
+    public void setOptionalFormalParams(OptionalFormalParams OptionalFormalParams) {
+        this.OptionalFormalParams=OptionalFormalParams;
     }
 
     public MethodVarList getMethodVarList() {
@@ -90,8 +79,7 @@ public class MethodDecl implements SyntaxNode {
 
     public void childrenAccept(Visitor visitor) {
         if(MethodTypeName!=null) MethodTypeName.accept(visitor);
-        if(FormPars!=null) FormPars.accept(visitor);
-        if(FormParsList!=null) FormParsList.accept(visitor);
+        if(OptionalFormalParams!=null) OptionalFormalParams.accept(visitor);
         if(MethodVarList!=null) MethodVarList.accept(visitor);
         if(StatementList!=null) StatementList.accept(visitor);
     }
@@ -99,16 +87,14 @@ public class MethodDecl implements SyntaxNode {
     public void traverseTopDown(Visitor visitor) {
         accept(visitor);
         if(MethodTypeName!=null) MethodTypeName.traverseTopDown(visitor);
-        if(FormPars!=null) FormPars.traverseTopDown(visitor);
-        if(FormParsList!=null) FormParsList.traverseTopDown(visitor);
+        if(OptionalFormalParams!=null) OptionalFormalParams.traverseTopDown(visitor);
         if(MethodVarList!=null) MethodVarList.traverseTopDown(visitor);
         if(StatementList!=null) StatementList.traverseTopDown(visitor);
     }
 
     public void traverseBottomUp(Visitor visitor) {
         if(MethodTypeName!=null) MethodTypeName.traverseBottomUp(visitor);
-        if(FormPars!=null) FormPars.traverseBottomUp(visitor);
-        if(FormParsList!=null) FormParsList.traverseBottomUp(visitor);
+        if(OptionalFormalParams!=null) OptionalFormalParams.traverseBottomUp(visitor);
         if(MethodVarList!=null) MethodVarList.traverseBottomUp(visitor);
         if(StatementList!=null) StatementList.traverseBottomUp(visitor);
         accept(visitor);
@@ -125,14 +111,8 @@ public class MethodDecl implements SyntaxNode {
             buffer.append(tab+"  null");
         buffer.append("\n");
 
-        if(FormPars!=null)
-            buffer.append(FormPars.toString("  "+tab));
-        else
-            buffer.append(tab+"  null");
-        buffer.append("\n");
-
-        if(FormParsList!=null)
-            buffer.append(FormParsList.toString("  "+tab));
+        if(OptionalFormalParams!=null)
+            buffer.append(OptionalFormalParams.toString("  "+tab));
         else
             buffer.append(tab+"  null");
         buffer.append("\n");

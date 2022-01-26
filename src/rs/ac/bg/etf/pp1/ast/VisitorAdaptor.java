@@ -1,6 +1,6 @@
 // generated with ast extension for cup
 // version 0.8
-// 25/0/2022 7:22:29
+// 26/0/2022 7:30:43
 
 
 package rs.ac.bg.etf.pp1.ast;
@@ -8,6 +8,7 @@ package rs.ac.bg.etf.pp1.ast;
 public abstract class VisitorAdaptor implements Visitor { 
 
     public void visit(Unmatched Unmatched) { }
+    public void visit(ReturnType ReturnType) { }
     public void visit(Mulop Mulop) { }
     public void visit(GroupDeclList GroupDeclList) { }
     public void visit(Matched Matched) { }
@@ -18,17 +19,16 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(CondTermList CondTermList) { }
     public void visit(MulopList MulopList) { }
     public void visit(VarDeclListModif VarDeclListModif) { }
-    public void visit(OptionalSquareMethodFormPars OptionalSquareMethodFormPars) { }
     public void visit(Variable Variable) { }
     public void visit(StatementList StatementList) { }
     public void visit(ConstDeclVal ConstDeclVal) { }
     public void visit(Addop Addop) { }
     public void visit(Factor Factor) { }
-    public void visit(Designator Designator) { }
     public void visit(FormParsList FormParsList) { }
     public void visit(Statements Statements) { }
     public void visit(ConstDeclList ConstDeclList) { }
     public void visit(NewFactorExprOptional NewFactorExprOptional) { }
+    public void visit(OptionalFormalParams OptionalFormalParams) { }
     public void visit(ActParsList ActParsList) { }
     public void visit(OptionalPrintParam OptionalPrintParam) { }
     public void visit(Label Label) { }
@@ -41,8 +41,8 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(DesignatorStatement DesignatorStatement) { }
     public void visit(Statement Statement) { }
     public void visit(CondFact CondFact) { }
-    public void visit(DesignatorElement DesignatorElement) { }
     public void visit(DesignatorFunctionCall DesignatorFunctionCall) { }
+    public void visit(DesignatorElement DesignatorElement) { }
     public void visit(MethodDeclList MethodDeclList) { }
     public void visit(OptionalMinus OptionalMinus) { }
     public void visit(GroupDecl GroupDecl) { }
@@ -63,6 +63,7 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(OptionalPrintParamDerived1 OptionalPrintParamDerived1) { visit(); }
     public void visit(OptionalPrintParamm OptionalPrintParamm) { visit(); }
     public void visit(DoStatementStart DoStatementStart) { visit(); }
+    public void visit(AssignmentStatement AssignmentStatement) { visit(); }
     public void visit(MatchedDerived1 MatchedDerived1) { visit(); }
     public void visit(DoStatement DoStatement) { visit(); }
     public void visit(ContinueStatament ContinueStatament) { visit(); }
@@ -91,7 +92,8 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(DesignatorElementWithDot DesignatorElementWithDot) { visit(); }
     public void visit(NoDesignatorListDeclarationMultiple NoDesignatorListDeclarationMultiple) { visit(); }
     public void visit(DesignatorListDeclarationMultiple DesignatorListDeclarationMultiple) { visit(); }
-    public void visit(DesignatorListDecl DesignatorListDecl) { visit(); }
+    public void visit(DesignatorName DesignatorName) { visit(); }
+    public void visit(Designator Designator) { visit(); }
     public void visit(NoNewFactorExprOpt NoNewFactorExprOpt) { visit(); }
     public void visit(NewFactorExprOpt NewFactorExprOpt) { visit(); }
     public void visit(ExprFactor ExprFactor) { visit(); }
@@ -126,13 +128,17 @@ public abstract class VisitorAdaptor implements Visitor {
     public void visit(MethodVarDeclarations MethodVarDeclarations) { visit(); }
     public void visit(NoFormParsAddList NoFormParsAddList) { visit(); }
     public void visit(FormParsAddList FormParsAddList) { visit(); }
-    public void visit(NoFormPars NoFormPars) { visit(); }
-    public void visit(FormParsDecl FormParsDecl) { visit(); }
-    public void visit(MethodDeclVoidName MethodDeclVoidName) { visit(); }
+    public void visit(FormParsDeclVar FormParsDeclVar) { visit(); }
+    public void visit(FormParsDeclArray FormParsDeclArray) { visit(); }
+    public void visit(DoNotHaveFormalParms DoNotHaveFormalParms) { visit(); }
+    public void visit(HaveFormalParms HaveFormalParms) { visit(); }
     public void visit(MethodDeclTypeName MethodDeclTypeName) { visit(); }
+    public void visit(NoReturnMethodType NoReturnMethodType) { visit(); }
+    public void visit(ReturnMethodType ReturnMethodType) { visit(); }
     public void visit(MethodDecl MethodDecl) { visit(); }
     public void visit(NoVarDeclListModification NoVarDeclListModification) { visit(); }
     public void visit(VarDeclListModification VarDeclListModification) { visit(); }
+    public void visit(RecordName RecordName) { visit(); }
     public void visit(RecordDecl RecordDecl) { visit(); }
     public void visit(OnlyVariableDecl OnlyVariableDecl) { visit(); }
     public void visit(VariableDecl VariableDecl) { visit(); }

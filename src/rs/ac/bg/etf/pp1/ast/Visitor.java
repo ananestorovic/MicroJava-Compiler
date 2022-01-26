@@ -1,6 +1,6 @@
 // generated with ast extension for cup
 // version 0.8
-// 25/0/2022 7:22:29
+// 26/0/2022 7:30:43
 
 
 package rs.ac.bg.etf.pp1.ast;
@@ -8,6 +8,7 @@ package rs.ac.bg.etf.pp1.ast;
 public interface Visitor { 
 
     public void visit(Unmatched Unmatched);
+    public void visit(ReturnType ReturnType);
     public void visit(Mulop Mulop);
     public void visit(GroupDeclList GroupDeclList);
     public void visit(Matched Matched);
@@ -18,17 +19,16 @@ public interface Visitor {
     public void visit(CondTermList CondTermList);
     public void visit(MulopList MulopList);
     public void visit(VarDeclListModif VarDeclListModif);
-    public void visit(OptionalSquareMethodFormPars OptionalSquareMethodFormPars);
     public void visit(Variable Variable);
     public void visit(StatementList StatementList);
     public void visit(ConstDeclVal ConstDeclVal);
     public void visit(Addop Addop);
     public void visit(Factor Factor);
-    public void visit(Designator Designator);
     public void visit(FormParsList FormParsList);
     public void visit(Statements Statements);
     public void visit(ConstDeclList ConstDeclList);
     public void visit(NewFactorExprOptional NewFactorExprOptional);
+    public void visit(OptionalFormalParams OptionalFormalParams);
     public void visit(ActParsList ActParsList);
     public void visit(OptionalPrintParam OptionalPrintParam);
     public void visit(Label Label);
@@ -41,8 +41,8 @@ public interface Visitor {
     public void visit(DesignatorStatement DesignatorStatement);
     public void visit(Statement Statement);
     public void visit(CondFact CondFact);
-    public void visit(DesignatorElement DesignatorElement);
     public void visit(DesignatorFunctionCall DesignatorFunctionCall);
+    public void visit(DesignatorElement DesignatorElement);
     public void visit(MethodDeclList MethodDeclList);
     public void visit(OptionalMinus OptionalMinus);
     public void visit(GroupDecl GroupDecl);
@@ -63,6 +63,7 @@ public interface Visitor {
     public void visit(OptionalPrintParamDerived1 OptionalPrintParamDerived1);
     public void visit(OptionalPrintParamm OptionalPrintParamm);
     public void visit(DoStatementStart DoStatementStart);
+    public void visit(AssignmentStatement AssignmentStatement);
     public void visit(MatchedDerived1 MatchedDerived1);
     public void visit(DoStatement DoStatement);
     public void visit(ContinueStatament ContinueStatament);
@@ -91,7 +92,8 @@ public interface Visitor {
     public void visit(DesignatorElementWithDot DesignatorElementWithDot);
     public void visit(NoDesignatorListDeclarationMultiple NoDesignatorListDeclarationMultiple);
     public void visit(DesignatorListDeclarationMultiple DesignatorListDeclarationMultiple);
-    public void visit(DesignatorListDecl DesignatorListDecl);
+    public void visit(DesignatorName DesignatorName);
+    public void visit(Designator Designator);
     public void visit(NoNewFactorExprOpt NoNewFactorExprOpt);
     public void visit(NewFactorExprOpt NewFactorExprOpt);
     public void visit(ExprFactor ExprFactor);
@@ -126,13 +128,17 @@ public interface Visitor {
     public void visit(MethodVarDeclarations MethodVarDeclarations);
     public void visit(NoFormParsAddList NoFormParsAddList);
     public void visit(FormParsAddList FormParsAddList);
-    public void visit(NoFormPars NoFormPars);
-    public void visit(FormParsDecl FormParsDecl);
-    public void visit(MethodDeclVoidName MethodDeclVoidName);
+    public void visit(FormParsDeclVar FormParsDeclVar);
+    public void visit(FormParsDeclArray FormParsDeclArray);
+    public void visit(DoNotHaveFormalParms DoNotHaveFormalParms);
+    public void visit(HaveFormalParms HaveFormalParms);
     public void visit(MethodDeclTypeName MethodDeclTypeName);
+    public void visit(NoReturnMethodType NoReturnMethodType);
+    public void visit(ReturnMethodType ReturnMethodType);
     public void visit(MethodDecl MethodDecl);
     public void visit(NoVarDeclListModification NoVarDeclListModification);
     public void visit(VarDeclListModification VarDeclListModification);
+    public void visit(RecordName RecordName);
     public void visit(RecordDecl RecordDecl);
     public void visit(OnlyVariableDecl OnlyVariableDecl);
     public void visit(VariableDecl VariableDecl);

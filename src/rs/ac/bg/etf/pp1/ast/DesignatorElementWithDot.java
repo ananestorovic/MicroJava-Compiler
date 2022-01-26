@@ -1,24 +1,24 @@
 // generated with ast extension for cup
 // version 0.8
-// 25/0/2022 7:22:29
+// 26/0/2022 7:30:43
 
 
 package rs.ac.bg.etf.pp1.ast;
 
 public class DesignatorElementWithDot extends DesignatorElement {
 
-    private String I1;
+    private String elementWithDotName;
 
-    public DesignatorElementWithDot (String I1) {
-        this.I1=I1;
+    public DesignatorElementWithDot (String elementWithDotName) {
+        this.elementWithDotName=elementWithDotName;
     }
 
-    public String getI1() {
-        return I1;
+    public String getElementWithDotName() {
+        return elementWithDotName;
     }
 
-    public void setI1(String I1) {
-        this.I1=I1;
+    public void setElementWithDotName(String elementWithDotName) {
+        this.elementWithDotName=elementWithDotName;
     }
 
     public void accept(Visitor visitor) {
@@ -41,7 +41,7 @@ public class DesignatorElementWithDot extends DesignatorElement {
         buffer.append(tab);
         buffer.append("DesignatorElementWithDot(\n");
 
-        buffer.append(" "+tab+I1);
+        buffer.append(" "+tab+elementWithDotName);
         buffer.append("\n");
 
         buffer.append(tab);

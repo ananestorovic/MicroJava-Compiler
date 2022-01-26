@@ -1,24 +1,13 @@
 // generated with ast extension for cup
 // version 0.8
-// 25/0/2022 7:22:29
+// 26/0/2022 7:30:43
 
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class MethodDeclVoidName extends MethodTypeName {
+public class NoReturnMethodType extends ReturnType {
 
-    private String methodName;
-
-    public MethodDeclVoidName (String methodName) {
-        this.methodName=methodName;
-    }
-
-    public String getMethodName() {
-        return methodName;
-    }
-
-    public void setMethodName(String methodName) {
-        this.methodName=methodName;
+    public NoReturnMethodType () {
     }
 
     public void accept(Visitor visitor) {
@@ -39,13 +28,10 @@ public class MethodDeclVoidName extends MethodTypeName {
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("MethodDeclVoidName(\n");
-
-        buffer.append(" "+tab+methodName);
-        buffer.append("\n");
+        buffer.append("NoReturnMethodType(\n");
 
         buffer.append(tab);
-        buffer.append(") [MethodDeclVoidName]");
+        buffer.append(") [NoReturnMethodType]");
         return buffer.toString();
     }
 }

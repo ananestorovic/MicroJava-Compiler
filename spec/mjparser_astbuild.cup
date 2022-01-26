@@ -102,18 +102,16 @@ terminal RBRACE;
 
 
 
-nonterminal rs.etf.pp1.symboltable.concepts.Obj  Program, ProgramName, Designator, DesignatorList, MethodTypeName, NewFactorExprOptional;
-nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement, Matched, Unmatched, OptionalActPars, DesignatorElement, Variable;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj  Program, ProgramName, Designator, DesignatorList, MethodTypeName, NewFactorExprOptional, RecordDecl, RecordName;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement, Matched, Unmatched, OptionalActPars, DesignatorElement, Variable, DesignatorName ;
 nonterminal GroupDeclList GroupDeclList;
 nonterminal GroupDecl GroupDecl;
 nonterminal ConstDecl ConstDecl;
 nonterminal ConstDeclList ConstDeclList;
 nonterminal ConstDeclOne ConstDeclOne;
 nonterminal ConstName ConstName;
-nonterminal ConstDeclVal ConstDeclVal;
 nonterminal VarDecl VarDecl;
 nonterminal VarDeclList VarDeclList;
-nonterminal RecordDecl RecordDecl;
 nonterminal MethodDecl MethodDecl;
 nonterminal StatementList StatementList;
 nonterminal FormPars FormPars;
@@ -123,8 +121,8 @@ nonterminal Mulop Mulop;
 nonterminal Addop Addop;
 nonterminal Relop Relop;
 nonterminal Label Label;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, DesignatorFunctionCall, MulopList, Factor, AddopList, DesignatorStatement;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct OptionalMinus, Expr, CondFact, CondTerm, CondTermList, Condition, ConditionList, Assignop, OptionalSquareMethodFormPars ;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, DesignatorFunctionCall, MulopList, Factor, AddopList, DesignatorStatement, ReturnType, AssignmentStatement;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct OptionalMinus, Expr, CondFact, CondTerm, CondTermList, Condition, ConditionList, Assignop, ConstDeclVal;
 nonterminal ActPars ActPars;
 nonterminal ActParsList ActParsList;
 nonterminal Statements Statements;
@@ -133,7 +131,7 @@ nonterminal MethodDeclList MethodDeclList;
 nonterminal OptionalSquareDesignator OptionalSquareDesignator;
 nonterminal VarDeclListModif VarDeclListModif;
 nonterminal DoStatementStart DoStatementStart;
-
+nonterminal OptionalFormalParams OptionalFormalParams;
 
 
 Program ::= (Program) PROGRAM ProgramName:P1 GroupDeclList:G2 LBRACE MethodDeclList:M3 RBRACE {: RESULT=new Program(P1, G2, M3); RESULT.setLine(P1left); :};
@@ -195,27 +193,33 @@ Variable ::= (VariableDecl)	IDENT:varName LSQUAREB RSQUAREB {: RESULT=new Variab
 					  ;	
 					  
 					  	
-RecordDecl ::= (RecordDecl) RECORD IDENT:recordName LBRACE VarDeclListModif:V1 RBRACE {: RESULT=new RecordDecl(recordName, V1); RESULT.setLine(recordNameleft); :}; /*nzm jesam trebala listu, ali kako sam ja napisala nmg samo listu*/
-
+RecordDecl ::= (RecordDecl) RECORD RecordName:R1 LBRACE VarDeclListModif:V2 RBRACE {: RESULT=new RecordDecl(R1, V2); RESULT.setLine(R1left); :}; 
+RecordName ::= (RecordName) IDENT:recordName {: RESULT=new RecordName(recordName); RESULT.setLine(recordNameleft); :};
 VarDeclListModif ::= (VarDeclListModification)  VarDecl:V1 VarDeclListModif:V2 {: RESULT=new VarDeclListModification(V1, V2); RESULT.setLine(V1left); :}
 					| (NoVarDeclListModification) {: RESULT=new NoVarDeclListModification(); :} /* epsilon */
 					;
 
 
-MethodDecl ::= (MethodDecl) MethodTypeName:M1 LPAREN FormPars:F2 FormParsList:F3 RPAREN MethodVarList:M4 LBRACE StatementList:S5 RBRACE {: RESULT=new MethodDecl(M1, F2, F3, M4, S5); RESULT.setLine(M1left); :} ;
+MethodDecl ::= (MethodDecl) MethodTypeName:M1 LPAREN OptionalFormalParams:O2 RPAREN MethodVarList:M3 LBRACE StatementList:S4 RBRACE {: RESULT=new MethodDecl(M1, O2, M3, S4); RESULT.setLine(M1left); :} ;
+
+ReturnType ::= (ReturnMethodType) Type:methodTypeName {: RESULT=new ReturnMethodType(methodTypeName); RESULT.setLine(methodTypeNameleft); :}
+				|
+				(NoReturnMethodType) VOID {: RESULT=new NoReturnMethodType(); :}
+				;
+
+MethodTypeName ::= (MethodDeclTypeName) ReturnType:R1 IDENT:methodName {: RESULT=new MethodDeclTypeName(R1, methodName); RESULT.setLine(R1left); :};
+				
 
 
-MethodTypeName ::= (MethodDeclTypeName) Type:methodTypeName IDENT:methodName {: RESULT=new MethodDeclTypeName(methodTypeName, methodName); RESULT.setLine(methodTypeNameleft); :}
-				| (MethodDeclVoidName) VOID IDENT:methodName {: RESULT=new MethodDeclVoidName(methodName); RESULT.setLine(methodNameleft); :}
+OptionalFormalParams ::= (HaveFormalParms) FormPars:F1 FormParsList:F2 {: RESULT=new HaveFormalParms(F1, F2); RESULT.setLine(F1left); :}
+					| (DoNotHaveFormalParms) {: RESULT=new DoNotHaveFormalParms(); :} /*epsilon*/
 				;
-FormPars ::= (FormParsDecl) Type:typeForm IDENT:nameForm OptionalSquareMethodFormPars:O1 {: RESULT=new FormParsDecl(typeForm, nameForm, O1); RESULT.setLine(typeFormleft); :}
-				| 
-				(NoFormPars) {: RESULT=new NoFormPars(); :} /* epsilon *
-				;
-OptionalSquareMethodFormPars ::= (SquareMethodFormPars)	LSQUAREB RSQUAREB
-								|
-								(NoSquareMethodFormPars) /* epsilon */		
-								;
+				
+FormPars ::= (FormParsDeclArray) Type:typeForm IDENT:nameForm LSQUAREB RSQUAREB {: RESULT=new FormParsDeclArray(typeForm, nameForm); RESULT.setLine(typeFormleft); :}
+			|
+		 	 (FormParsDeclVar) Type:typeForm IDENT:nameForm {: RESULT=new FormParsDeclVar(typeForm, nameForm); RESULT.setLine(typeFormleft); :} 
+			;
+				
 FormParsList ::=
 				(FormParsAddList) FormParsList:F1 COMMA FormPars:F2 {: RESULT=new FormParsAddList(F1, F2); RESULT.setLine(F1left); :}
 				|
@@ -295,14 +299,16 @@ NewFactorExprOptional ::= (NewFactorExprOpt) LSQUAREB Expr:E1 RSQUAREB {: RESULT
 						(NoNewFactorExprOpt) {: RESULT=new NoNewFactorExprOpt(); :}  /* epsilon */
 					;
 				
-Designator ::= (DesignatorListDecl) IDENT:designatorName DesignatorList:D1 {: RESULT=new DesignatorListDecl(designatorName, D1); RESULT.setLine(designatorNameleft); :}
-			;
-DesignatorList ::= (DesignatorListDeclarationMultiple) DesignatorElement:D1 DesignatorList:D2 {: RESULT=new DesignatorListDeclarationMultiple(D1, D2); RESULT.setLine(D1left); :} 
+Designator ::= (Designator) DesignatorName:D1 DesignatorList:D2 {: RESULT=new Designator(D1, D2); RESULT.setLine(D1left); :};
+
+DesignatorName ::= (DesignatorName) IDENT:designatorName {: RESULT=new DesignatorName(designatorName); RESULT.setLine(designatorNameleft); :};
+
+DesignatorList ::= (DesignatorListDeclarationMultiple) DesignatorList:D1 DesignatorElement:D2 {: RESULT=new DesignatorListDeclarationMultiple(D1, D2); RESULT.setLine(D1left); :}    
 				|
 				(NoDesignatorListDeclarationMultiple) {: RESULT=new NoDesignatorListDeclarationMultiple(); :}
 				;
 
-DesignatorElement ::=(DesignatorElementWithDot) DOT IDENT:I1 {: RESULT=new DesignatorElementWithDot(I1); RESULT.setLine(I1left); :}   
+DesignatorElement ::=(DesignatorElementWithDot) DOT IDENT:elementWithDotName {: RESULT=new DesignatorElementWithDot(elementWithDotName); RESULT.setLine(elementWithDotNameleft); :}  
 			|
 			 (DesignatorElementSquar) LSQUAREB Expr:E1 RSQUAREB {: RESULT=new DesignatorElementSquar(E1); RESULT.setLine(E1left); :} 
 			 ;
@@ -342,7 +348,7 @@ Unmatched ::= (UnmatchedIf) IF LPAREN Condition:C1 RPAREN Statement:S2 {: RESULT
 		 	;
 		 
 
-Matched ::= (DesignatorStatement1) DesignatorStatement:D1 SEMI {: RESULT=new DesignatorStatement1(D1); RESULT.setLine(D1left); :}
+Matched ::= (DesignatorStatement1) Designator:D1 AssignmentStatement:A2 {: RESULT=new DesignatorStatement1(D1, A2); RESULT.setLine(D1left); :}
 		   |
 		   (PrintStmt) PRINT LPAREN Expr:E1 OptionalPrintParam:O2 RPAREN SEMI {: RESULT=new PrintStmt(E1, O2); RESULT.setLine(E1left); :}
 		   |
@@ -365,6 +371,7 @@ Matched ::= (DesignatorStatement1) DesignatorStatement:D1 SEMI {: RESULT=new Des
 		   error SEMI:l {: parser.report_error("Sintaksa greska na liniji " + lleft, null); :} {: RESULT=new MatchedDerived1(); :}
 		   ;
 
+AssignmentStatement::= (AssignmentStatement) Assignop:A1  Expr:E2 {: RESULT=new AssignmentStatement(A1, E2); RESULT.setLine(A1left); :};
 
 DoStatementStart ::= (DoStatementStart) DO {: RESULT=new DoStatementStart(); :};
 		   

@@ -102,18 +102,16 @@ terminal RBRACE;
 
 
 
-nonterminal rs.etf.pp1.symboltable.concepts.Obj  Program, ProgramName, Designator, DesignatorList, MethodTypeName, NewFactorExprOptional;
-nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement, Matched, Unmatched, OptionalActPars, DesignatorElement, Variable;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj  Program, ProgramName, Designator, DesignatorList, MethodTypeName, NewFactorExprOptional, RecordDecl, RecordName;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement, Matched, Unmatched, OptionalActPars, DesignatorElement, Variable, DesignatorName ;
 nonterminal GroupDeclList;
 nonterminal GroupDecl;
 nonterminal ConstDecl;
 nonterminal ConstDeclList;
 nonterminal ConstDeclOne;
 nonterminal ConstName;
-nonterminal ConstDeclVal;
 nonterminal VarDecl;
 nonterminal VarDeclList;
-nonterminal RecordDecl;
 nonterminal MethodDecl;
 nonterminal StatementList;
 nonterminal FormPars;
@@ -123,8 +121,8 @@ nonterminal Mulop;
 nonterminal Addop;
 nonterminal Relop;
 nonterminal Label;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, DesignatorFunctionCall, MulopList, Factor, AddopList, DesignatorStatement;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct OptionalMinus, Expr, CondFact, CondTerm, CondTermList, Condition, ConditionList, Assignop, OptionalSquareMethodFormPars ;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, DesignatorFunctionCall, MulopList, Factor, AddopList, DesignatorStatement, ReturnType, AssignmentStatement;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct OptionalMinus, Expr, CondFact, CondTerm, CondTermList, Condition, ConditionList, Assignop, ConstDeclVal;
 nonterminal ActPars;
 nonterminal ActParsList;
 nonterminal Statements;
@@ -133,7 +131,7 @@ nonterminal MethodDeclList;
 nonterminal OptionalSquareDesignator;
 nonterminal VarDeclListModif;
 nonterminal DoStatementStart;
-
+nonterminal OptionalFormalParams;
 
 
 Program ::= (Program) PROGRAM ProgramName GroupDeclList LBRACE MethodDeclList RBRACE;
@@ -195,27 +193,33 @@ Variable ::= (VariableDecl)	IDENT:varName LSQUAREB RSQUAREB
 					  ;	
 					  
 					  	
-RecordDecl ::= (RecordDecl) RECORD IDENT:recordName LBRACE VarDeclListModif RBRACE; /*nzm jesam trebala listu, ali kako sam ja napisala nmg samo listu*/
-
+RecordDecl ::= (RecordDecl) RECORD RecordName LBRACE VarDeclListModif RBRACE; 
+RecordName ::= (RecordName) IDENT:recordName;
 VarDeclListModif ::= (VarDeclListModification)  VarDecl VarDeclListModif
 					| (NoVarDeclListModification) /* epsilon */
 					;
 
 
-MethodDecl ::= (MethodDecl) MethodTypeName LPAREN FormPars FormParsList RPAREN MethodVarList LBRACE StatementList RBRACE ;
+MethodDecl ::= (MethodDecl) MethodTypeName LPAREN OptionalFormalParams RPAREN MethodVarList LBRACE StatementList RBRACE ;
+
+ReturnType ::= (ReturnMethodType) Type:methodTypeName
+				|
+				(NoReturnMethodType) VOID
+				;
+
+MethodTypeName ::= (MethodDeclTypeName) ReturnType IDENT:methodName;
+				
 
 
-MethodTypeName ::= (MethodDeclTypeName) Type:methodTypeName IDENT:methodName
-				| (MethodDeclVoidName) VOID IDENT:methodName
+OptionalFormalParams ::= (HaveFormalParms) FormPars FormParsList
+					| (DoNotHaveFormalParms) /*epsilon*/
 				;
-FormPars ::= (FormParsDecl) Type:typeForm IDENT:nameForm OptionalSquareMethodFormPars
-				| 
-				(NoFormPars) /* epsilon *
-				;
-OptionalSquareMethodFormPars ::= (SquareMethodFormPars)	LSQUAREB RSQUAREB
-								|
-								(NoSquareMethodFormPars) /* epsilon */		
-								;
+				
+FormPars ::= (FormParsDeclArray) Type:typeForm IDENT:nameForm LSQUAREB RSQUAREB
+			|
+		 	 (FormParsDeclVar) Type:typeForm IDENT:nameForm 
+			;
+				
 FormParsList ::=
 				(FormParsAddList) FormParsList COMMA FormPars
 				|
@@ -295,14 +299,16 @@ NewFactorExprOptional ::= (NewFactorExprOpt) LSQUAREB Expr RSQUAREB
 						(NoNewFactorExprOpt)  /* epsilon */
 					;
 				
-Designator ::= (DesignatorListDecl) IDENT:designatorName DesignatorList
-			;
-DesignatorList ::= (DesignatorListDeclarationMultiple) DesignatorElement DesignatorList 
+Designator ::= (Designator) DesignatorName DesignatorList;
+
+DesignatorName ::= (DesignatorName) IDENT:designatorName;
+
+DesignatorList ::= (DesignatorListDeclarationMultiple) DesignatorList DesignatorElement    
 				|
 				(NoDesignatorListDeclarationMultiple)
 				;
 
-DesignatorElement ::=(DesignatorElementWithDot) DOT IDENT   
+DesignatorElement ::=(DesignatorElementWithDot) DOT IDENT:elementWithDotName  
 			|
 			 (DesignatorElementSquar) LSQUAREB Expr RSQUAREB 
 			 ;
@@ -342,7 +348,7 @@ Unmatched ::= (UnmatchedIf) IF LPAREN Condition RPAREN Statement
 		 	;
 		 
 
-Matched ::= (DesignatorStatement1) DesignatorStatement SEMI
+Matched ::= (DesignatorStatement1) Designator AssignmentStatement
 		   |
 		   (PrintStmt) PRINT LPAREN Expr OptionalPrintParam RPAREN SEMI
 		   |
@@ -365,6 +371,7 @@ Matched ::= (DesignatorStatement1) DesignatorStatement SEMI
 		   error SEMI:l {: parser.report_error("Sintaksa greska na liniji " + lleft, null); :}
 		   ;
 
+AssignmentStatement::= (AssignmentStatement) Assignop  Expr;
 
 DoStatementStart ::= (DoStatementStart) DO;
 		   
