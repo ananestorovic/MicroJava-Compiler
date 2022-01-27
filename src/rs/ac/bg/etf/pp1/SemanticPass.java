@@ -235,7 +235,19 @@ public class SemanticPass extends VisitorAdaptor {
     	if(myLeft == null) 
     		elementSquare.obj = Tab.noObj;
 		else {
-			if(elementSquare.getExpr().struct != Tab.intType)
+			if(elementSquare.getExpr().struct.getKind() == Struct.Array) {
+				
+				Struct element = elementSquare.getExpr().struct.getElemType();
+				
+				while(element.getKind() == Struct.Array) {
+					element=element.getElemType();
+				}
+				
+				if(element.getKind() != Struct.Int)
+					report_error("Greska: expr mora biti int", elementSquare);
+				
+			}
+			else if(elementSquare.getExpr().struct.getKind() != Struct.Int)
 				report_error("Greska: expr mora biti int", elementSquare);
 			
 			if(myLeft.getType().getKind() == Struct.Array) 
@@ -256,6 +268,10 @@ public class SemanticPass extends VisitorAdaptor {
     public void visit (NoDesignatorListDeclarationMultiple noListDeclarationMultiple) {
     	noListDeclarationMultiple.obj = Tab.noObj;
         
+    }
+    
+    public void visit(DesignatorName designatorName) {
+    	designatorName.obj = Tab.find(designatorName.getDesignatorName());
     }
     
     public void visit(Designator designator) {
@@ -283,7 +299,7 @@ public class SemanticPass extends VisitorAdaptor {
    
     public void visit (MulopListDecls mulopList) { 
     	
-    	if(mulopList.getFactor().struct.equals(mulopList.getMulopList().struct)) {
+    	if(!mulopList.getFactor().struct.equals(mulopList.getMulopList().struct)) {
     		
     		report_error("Greska na liniji " + mulopList.getLine()+ " : ova mulop lista nema parametre istog tipa! ", null);
     	}
@@ -303,7 +319,7 @@ public class SemanticPass extends VisitorAdaptor {
     }
     
     public void visit(AddopListDecl addopList) {
-    	if(addopList.getTerm().struct != addopList.getAddopList().struct) {
+    	if(!addopList.getTerm().struct.equals(addopList.getAddopList().struct)) {
     		report_error("Greska na liniji " + addopList.getLine()+ " : ova addop lista nema parametre istog tipa! ", null);
     	}
     	
@@ -313,7 +329,7 @@ public class SemanticPass extends VisitorAdaptor {
     }
     
     public void visit(OptionalMinusAdd minusAdd) {
-    	if(((Expr)minusAdd.getParent()).getAddopList().struct != Tab.intType) {
+    	if(((Expr)minusAdd.getParent()).getAddopList().struct.equals(Tab.intType)) {
     		report_error("Greska na liniji " + minusAdd.getLine()+" : ne moze stajati minus ispred izraza koji nije int!", null);
     	}	
     }
@@ -437,7 +453,7 @@ public class SemanticPass extends VisitorAdaptor {
 		printCallCount++;
 		
 		Struct exprType = printSatement.getExpr().struct;
-		if (exprType!= Tab.intType && exprType != Tab.charType && exprType != boolType) {
+		if (!exprType.equals(Tab.intType) && !exprType.equals(Tab.charType) && !exprType.equals(exprType)) {
 			report_error("Greska: Expr kod printa mora biti tipa int, char ili bool", printSatement);
 		}
 		
@@ -484,17 +500,64 @@ public class SemanticPass extends VisitorAdaptor {
 		
 	}
 	
-	public void visit(DesignatorStatement1 assignment) {
+	public void visit(Assignment assignment) {
 		
 		Obj designator = Tab.find(assignment.getDesignator().getDesignatorName().getDesignatorName());
 		
-		if (!assignment.getAssignmentStatement().struct.assignableTo(designator.getType())) {
-			report_error("Greska: Ne mozete dodeliti jedan tip drugom, nisu kompatibilni", assignment);
+		if (designator.equals(Tab.noObj)) {
+			report_error("Greska: Promenljiva nije nadjena!", assignment);
+			assignment.struct = Tab.noType;
+			return;
 		}
 		
-		if(designator.getType() !=Tab.intType||  assignment.getAssignmentStatement().getExpr().struct!=Tab.intType) {
-  		report_error("Greska: Expr i Term moraju biti tipa int", assignment);
-    	}
+		if (designator.getKind() == Obj.Meth) {
+			report_error("Greska: Ime predstavlja funkciju!", assignment);
+			assignment.struct = Tab.noType;
+			return;
+		}
+		
+		if(designator.getType().getKind() == Struct.Array && assignment.getAssignmentStatement().struct.getKind() ==Struct.Array ) {
+			
+			Struct element1 = designator.getType().getElemType();
+			Struct element2 = assignment.getAssignmentStatement().struct.getElemType();
+			
+			if(!element1.equals(element2)) {
+				
+				while(element1.getKind() == Struct.Array) {
+					element1 = element1.getElemType();
+				}
+				while(element2.getKind() == Struct.Array) {
+					element2 = element2.getElemType();
+				}
+				if(!element1.equals(element2))
+				report_error("Greska: Ne mozete dodeliti jedan tip drugom, nisu kompatibilni!", assignment);
+			}
+			
+		}
+		
+		else if(designator.getType().getKind() == Struct.Array ) {
+			
+			Struct element1 = designator.getType().getElemType();
+			
+			if(!element1.equals(assignment.getAssignmentStatement().struct)) {
+				report_error("Greska: Ne mozete dodeliti jedan tip drugom, nisu kompatibilni!", assignment);
+			}
+			
+		}
+		
+		else if(assignment.getAssignmentStatement().struct.getKind() ==Struct.Array ) {
+			
+
+			Struct element1 = assignment.getAssignmentStatement().struct.getElemType();
+			
+			if(!element1.equals(designator.getType())) {
+				report_error("Greska: Ne mozete dodeliti jedan tip drugom, nisu kompatibilni", assignment);
+			}
+			
+		}
+		else if (!assignment.getAssignmentStatement().struct.assignableTo(designator.getType())) {
+			report_error("Greska: Ne mozete dodeliti jedan tip drugom, nisu kompatibilni", assignment);
+		}
 		
 	}
 	
@@ -516,13 +579,13 @@ public class SemanticPass extends VisitorAdaptor {
 		if (obj == Tab.noObj || obj.getLevel() == 0) {
 			Obj inserted = Tab.insert(Obj.Var, formParsDecl.getNameForm(),
 					new Struct(Struct.Array));
-			inserted.getType().setElementType(formParsDecl.getType().struct);
+			inserted.getType().setElementType(formParsDecl.getFormParsType().struct);
 			
 			inserted.setFpPos(Tab.currentScope.getnVars());
 			currentMethodParams.add(inserted);
 		} else {
 			errorDetected = true;
-			report_error("Greska: Vec je definisan ovaj form param", formParsDecl);
+			report_error("Greska: Vec je definisan ovaj form param!", formParsDecl);
 		}
 	}
 	
@@ -533,7 +596,7 @@ public class SemanticPass extends VisitorAdaptor {
 		
 		if (obj == Tab.noObj || obj.getLevel() == 0) {
 			Obj inserted = Tab.insert(Obj.Var, formParsDeclVar.getNameForm(),
-					formParsDeclVar.getType().struct);
+					formParsDeclVar.getFormParsType().struct);
 			
 			inserted.setFpPos(Tab.currentScope.getnVars());
 			currentMethodParams.add(inserted);
@@ -671,6 +734,8 @@ public class SemanticPass extends VisitorAdaptor {
     	}
     	report_error("Greska na liniji " + conditionFact.getLine()+" : trebalo je da bude tipa bool!", conditionFact);
     	conditionFact.struct=Tab.noType;
+    	
+    	
     }
     
     
@@ -710,7 +775,6 @@ public class SemanticPass extends VisitorAdaptor {
     		factorDesignator.struct = Tab.noType;
 		else
 			factorDesignator.struct = factorDesignator.getDesignator().obj.getType();
-
 	}
    
     
@@ -726,10 +790,14 @@ public class SemanticPass extends VisitorAdaptor {
     	if(newFactor.getNewFactorExprOptional() instanceof NoNewFactorExprOpt) {
     		if(newFactor.getType().struct.getKind() != Struct.Class){
     			report_error("Greska na liniji: " + newFactor.getLine() + " ovo nije tipa strukture ", newFactor);	
+    			newFactor.struct = Tab.noType;
     			return;
     		}
+    		newFactor.struct= newFactor.getType().struct; 
+    	} else {
+    		newFactor.struct = new Struct(Struct.Array);
+    		newFactor.struct.setElementType(newFactor.getType().struct);
     	}
-		newFactor.struct=newFactor.getType().struct; //NISAM SIGURNA STA POSTIZEM OVIM
     }
     
     //

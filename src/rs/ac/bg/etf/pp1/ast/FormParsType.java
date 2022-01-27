@@ -5,24 +5,25 @@
 
 package rs.ac.bg.etf.pp1.ast;
 
-public class DesignatorName implements SyntaxNode {
+public class FormParsType implements SyntaxNode {
 
     private SyntaxNode parent;
     private int line;
-    public rs.etf.pp1.symboltable.concepts.Obj obj = null;
+    public rs.etf.pp1.symboltable.concepts.Struct struct = null;
 
-    private String designatorName;
+    private Type Type;
 
-    public DesignatorName (String designatorName) {
-        this.designatorName=designatorName;
+    public FormParsType (Type Type) {
+        this.Type=Type;
+        if(Type!=null) Type.setParent(this);
     }
 
-    public String getDesignatorName() {
-        return designatorName;
+    public Type getType() {
+        return Type;
     }
 
-    public void setDesignatorName(String designatorName) {
-        this.designatorName=designatorName;
+    public void setType(Type Type) {
+        this.Type=Type;
     }
 
     public SyntaxNode getParent() {
@@ -46,26 +47,32 @@ public class DesignatorName implements SyntaxNode {
     }
 
     public void childrenAccept(Visitor visitor) {
+        if(Type!=null) Type.accept(visitor);
     }
 
     public void traverseTopDown(Visitor visitor) {
         accept(visitor);
+        if(Type!=null) Type.traverseTopDown(visitor);
     }
 
     public void traverseBottomUp(Visitor visitor) {
+        if(Type!=null) Type.traverseBottomUp(visitor);
         accept(visitor);
     }
 
     public String toString(String tab) {
         StringBuffer buffer=new StringBuffer();
         buffer.append(tab);
-        buffer.append("DesignatorName(\n");
+        buffer.append("FormParsType(\n");
 
-        buffer.append(" "+tab+designatorName);
+        if(Type!=null)
+            buffer.append(Type.toString("  "+tab));
+        else
+            buffer.append(tab+"  null");
         buffer.append("\n");
 
         buffer.append(tab);
-        buffer.append(") [DesignatorName]");
+        buffer.append(") [FormParsType]");
         return buffer.toString();
     }
 }

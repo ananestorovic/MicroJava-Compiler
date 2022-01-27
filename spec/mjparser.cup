@@ -103,7 +103,7 @@ terminal RBRACE;
 
 
 nonterminal rs.etf.pp1.symboltable.concepts.Obj  Program, ProgramName, Designator, DesignatorList, MethodTypeName, NewFactorExprOptional, RecordDecl, RecordName;
-nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement, Matched, Unmatched, OptionalActPars, DesignatorElement, Variable, DesignatorName ;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement, Matched, Unmatched, OptionalActPars, DesignatorElement, Variable, DesignatorName;
 nonterminal GroupDeclList;
 nonterminal GroupDecl;
 nonterminal ConstDecl;
@@ -121,8 +121,8 @@ nonterminal Mulop;
 nonterminal Addop;
 nonterminal Relop;
 nonterminal Label;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, DesignatorFunctionCall, MulopList, Factor, AddopList, DesignatorStatement, ReturnType, AssignmentStatement;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct OptionalMinus, Expr, CondFact, CondTerm, CondTermList, Condition, ConditionList, Assignop, ConstDeclVal;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, DesignatorFunctionCall, MulopList, Factor, AddopList, DesignatorStatement, ReturnType,  AssignmentStatement;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct OptionalMinus, Expr, CondFact, CondTerm, CondTermList, Condition, ConditionList, Assignop, ConstDeclVal, FormParsType;
 nonterminal ActPars;
 nonterminal ActParsList;
 nonterminal Statements;
@@ -132,6 +132,7 @@ nonterminal OptionalSquareDesignator;
 nonterminal VarDeclListModif;
 nonterminal DoStatementStart;
 nonterminal OptionalFormalParams;
+
 
 
 Program ::= (Program) PROGRAM ProgramName GroupDeclList LBRACE MethodDeclList RBRACE;
@@ -215,10 +216,11 @@ OptionalFormalParams ::= (HaveFormalParms) FormPars FormParsList
 					| (DoNotHaveFormalParms) /*epsilon*/
 				;
 				
-FormPars ::= (FormParsDeclArray) Type:typeForm IDENT:nameForm LSQUAREB RSQUAREB
+FormPars ::= (FormParsDeclArray) FormParsType IDENT:nameForm LSQUAREB RSQUAREB
 			|
-		 	 (FormParsDeclVar) Type:typeForm IDENT:nameForm 
+		 	 (FormParsDeclVar) FormParsType IDENT:nameForm 
 			;
+FormParsType ::= (FormParsType) Type:typeForm;
 				
 FormParsList ::=
 				(FormParsAddList) FormParsList COMMA FormPars
@@ -348,7 +350,7 @@ Unmatched ::= (UnmatchedIf) IF LPAREN Condition RPAREN Statement
 		 	;
 		 
 
-Matched ::= (DesignatorStatement1) Designator AssignmentStatement
+Matched ::= (DesignatorStatement1) DesignatorStatement SEMI
 		   |
 		   (PrintStmt) PRINT LPAREN Expr OptionalPrintParam RPAREN SEMI
 		   |
@@ -381,11 +383,11 @@ OptionalPrintParam ::= (OptionalPrintParamm) COMMA NUMBER
 	| /* epsilon */
 	;
 	
-DesignatorStatement ::= (Inc) Designator INC
+DesignatorStatement ::= (Inc) Designator INC 
 						|
 						(Dec) Designator DEC
 						|
-						(Assignment) Designator Assignop Expr
+						(Assignment) Designator AssignmentStatement
 						|
 						(FunctionCall) DesignatorFunctionCall
 						;

@@ -103,7 +103,7 @@ terminal RBRACE;
 
 
 nonterminal rs.etf.pp1.symboltable.concepts.Obj  Program, ProgramName, Designator, DesignatorList, MethodTypeName, NewFactorExprOptional, RecordDecl, RecordName;
-nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement, Matched, Unmatched, OptionalActPars, DesignatorElement, Variable, DesignatorName ;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement, Matched, Unmatched, OptionalActPars, DesignatorElement, Variable, DesignatorName;
 nonterminal GroupDeclList GroupDeclList;
 nonterminal GroupDecl GroupDecl;
 nonterminal ConstDecl ConstDecl;
@@ -121,8 +121,8 @@ nonterminal Mulop Mulop;
 nonterminal Addop Addop;
 nonterminal Relop Relop;
 nonterminal Label Label;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, DesignatorFunctionCall, MulopList, Factor, AddopList, DesignatorStatement, ReturnType, AssignmentStatement;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct OptionalMinus, Expr, CondFact, CondTerm, CondTermList, Condition, ConditionList, Assignop, ConstDeclVal;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, DesignatorFunctionCall, MulopList, Factor, AddopList, DesignatorStatement, ReturnType,  AssignmentStatement;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct OptionalMinus, Expr, CondFact, CondTerm, CondTermList, Condition, ConditionList, Assignop, ConstDeclVal, FormParsType;
 nonterminal ActPars ActPars;
 nonterminal ActParsList ActParsList;
 nonterminal Statements Statements;
@@ -132,6 +132,7 @@ nonterminal OptionalSquareDesignator OptionalSquareDesignator;
 nonterminal VarDeclListModif VarDeclListModif;
 nonterminal DoStatementStart DoStatementStart;
 nonterminal OptionalFormalParams OptionalFormalParams;
+
 
 
 Program ::= (Program) PROGRAM ProgramName:P1 GroupDeclList:G2 LBRACE MethodDeclList:M3 RBRACE {: RESULT=new Program(P1, G2, M3); RESULT.setLine(P1left); :};
@@ -215,10 +216,11 @@ OptionalFormalParams ::= (HaveFormalParms) FormPars:F1 FormParsList:F2 {: RESULT
 					| (DoNotHaveFormalParms) {: RESULT=new DoNotHaveFormalParms(); :} /*epsilon*/
 				;
 				
-FormPars ::= (FormParsDeclArray) Type:typeForm IDENT:nameForm LSQUAREB RSQUAREB {: RESULT=new FormParsDeclArray(typeForm, nameForm); RESULT.setLine(typeFormleft); :}
+FormPars ::= (FormParsDeclArray) FormParsType:F1 IDENT:nameForm LSQUAREB RSQUAREB {: RESULT=new FormParsDeclArray(F1, nameForm); RESULT.setLine(F1left); :}
 			|
-		 	 (FormParsDeclVar) Type:typeForm IDENT:nameForm {: RESULT=new FormParsDeclVar(typeForm, nameForm); RESULT.setLine(typeFormleft); :} 
+		 	 (FormParsDeclVar) FormParsType:F1 IDENT:nameForm {: RESULT=new FormParsDeclVar(F1, nameForm); RESULT.setLine(F1left); :} 
 			;
+FormParsType ::= (FormParsType) Type:typeForm {: RESULT=new FormParsType(typeForm); RESULT.setLine(typeFormleft); :};
 				
 FormParsList ::=
 				(FormParsAddList) FormParsList:F1 COMMA FormPars:F2 {: RESULT=new FormParsAddList(F1, F2); RESULT.setLine(F1left); :}
@@ -348,7 +350,7 @@ Unmatched ::= (UnmatchedIf) IF LPAREN Condition:C1 RPAREN Statement:S2 {: RESULT
 		 	;
 		 
 
-Matched ::= (DesignatorStatement1) Designator:D1 AssignmentStatement:A2 {: RESULT=new DesignatorStatement1(D1, A2); RESULT.setLine(D1left); :}
+Matched ::= (DesignatorStatement1) DesignatorStatement:D1 SEMI {: RESULT=new DesignatorStatement1(D1); RESULT.setLine(D1left); :}
 		   |
 		   (PrintStmt) PRINT LPAREN Expr:E1 OptionalPrintParam:O2 RPAREN SEMI {: RESULT=new PrintStmt(E1, O2); RESULT.setLine(E1left); :}
 		   |
@@ -381,11 +383,11 @@ OptionalPrintParam ::= (OptionalPrintParamm) COMMA NUMBER:N1 {: RESULT=new Optio
 	| {: RESULT=new OptionalPrintParamDerived2(); :} /* epsilon */
 	;
 	
-DesignatorStatement ::= (Inc) Designator:D1 INC {: RESULT=new Inc(D1); RESULT.setLine(D1left); :}
+DesignatorStatement ::= (Inc) Designator:D1 INC {: RESULT=new Inc(D1); RESULT.setLine(D1left); :} 
 						|
 						(Dec) Designator:D1 DEC {: RESULT=new Dec(D1); RESULT.setLine(D1left); :}
 						|
-						(Assignment) Designator:D1 Assignop:A2 Expr:E3 {: RESULT=new Assignment(D1, A2, E3); RESULT.setLine(D1left); :}
+						(Assignment) Designator:D1 AssignmentStatement:A2 {: RESULT=new Assignment(D1, A2); RESULT.setLine(D1left); :}
 						|
 						(FunctionCall) DesignatorFunctionCall:D1 {: RESULT=new FunctionCall(D1); RESULT.setLine(D1left); :}
 						;

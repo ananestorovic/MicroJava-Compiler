@@ -1,27 +1,27 @@
 // generated with ast extension for cup
 // version 0.8
-// 26/0/2022 7:30:43
+// 27/0/2022 4:45:39
 
 
 package rs.ac.bg.etf.pp1.ast;
 
 public class FormParsDeclArray extends FormPars {
 
-    private Type Type;
+    private FormParsType FormParsType;
     private String nameForm;
 
-    public FormParsDeclArray (Type Type, String nameForm) {
-        this.Type=Type;
-        if(Type!=null) Type.setParent(this);
+    public FormParsDeclArray (FormParsType FormParsType, String nameForm) {
+        this.FormParsType=FormParsType;
+        if(FormParsType!=null) FormParsType.setParent(this);
         this.nameForm=nameForm;
     }
 
-    public Type getType() {
-        return Type;
+    public FormParsType getFormParsType() {
+        return FormParsType;
     }
 
-    public void setType(Type Type) {
-        this.Type=Type;
+    public void setFormParsType(FormParsType FormParsType) {
+        this.FormParsType=FormParsType;
     }
 
     public String getNameForm() {
@@ -37,16 +37,16 @@ public class FormParsDeclArray extends FormPars {
     }
 
     public void childrenAccept(Visitor visitor) {
-        if(Type!=null) Type.accept(visitor);
+        if(FormParsType!=null) FormParsType.accept(visitor);
     }
 
     public void traverseTopDown(Visitor visitor) {
         accept(visitor);
-        if(Type!=null) Type.traverseTopDown(visitor);
+        if(FormParsType!=null) FormParsType.traverseTopDown(visitor);
     }
 
     public void traverseBottomUp(Visitor visitor) {
-        if(Type!=null) Type.traverseBottomUp(visitor);
+        if(FormParsType!=null) FormParsType.traverseBottomUp(visitor);
         accept(visitor);
     }
 
@@ -55,8 +55,8 @@ public class FormParsDeclArray extends FormPars {
         buffer.append(tab);
         buffer.append("FormParsDeclArray(\n");
 
-        if(Type!=null)
-            buffer.append(Type.toString("  "+tab));
+        if(FormParsType!=null)
+            buffer.append(FormParsType.toString("  "+tab));
         else
             buffer.append(tab+"  null");
         buffer.append("\n");

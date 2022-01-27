@@ -25,8 +25,8 @@ program test301
 		niz = new int[3];
 		niz[nula] = jedan;
 		niz[1] = 2;
-		niz[niz[jedan]] = niz[niz[0]] * 3;
-		bodovi = niz[2]/niz[0];
+		//niz[niz[jedan]] = niz[niz[0]] * 3;
+		//bodovi = niz[2]/niz[0];
 		print(bodovi); 
 		print(niz[2]);
 		
