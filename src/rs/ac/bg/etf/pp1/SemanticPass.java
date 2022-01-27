@@ -19,6 +19,7 @@ public class SemanticPass extends VisitorAdaptor {
 	boolean errorDetected = false;
 	int nVars;
 	public static Struct boolType;
+	public static Struct recordType;
 	List<Expr> listOfActParams = new ArrayList<>();
 	int doStatement = 0;
 	Struct methodReturnType = Tab.noType;
@@ -58,11 +59,16 @@ public class SemanticPass extends VisitorAdaptor {
 	}
 
 	
-	
+	private void addRecordTypeInSymTab() {
+		recordType = new Struct(Struct.Class);
+		recordType.setElementType(Tab.noType); 
+		Tab.insert(Obj.Type, "record", recordType);
+	}
 	
     
     public void visit(ProgramName programName){
     	programName.obj = Tab.insert(Obj.Prog, programName.getProgramName(), Tab.noType);
+    	addRecordTypeInSymTab();
     	addBoolTypeInSymTab();
     	Tab.openScope();
     }
@@ -84,15 +90,16 @@ public class SemanticPass extends VisitorAdaptor {
     
     //NEMAM BAS IDEJU KAKO BIH OVO :(
     public void visit(RecordName recordName){
-    	recordName.obj = Tab.insert(Struct.Class, recordName.getRecordName(), Tab.noType);
+    	recordName.obj = Tab.insert(Obj.Type, recordName.getRecordName(), recordType);
     	Tab.openScope();
     }
     
     public void visit(RecordDecl recordDecl){
-		Tab.chainLocalSymbols(recordDecl.getRecordName().obj);
+		Tab.chainLocalSymbols(recordDecl.getRecordName().obj.getType());
 		Tab.closeScope();
 	}
     
+
     
     public void visit(MethodDeclTypeName methodTypeName) {
     	String nameMethod = methodTypeName.getMethodName();
@@ -183,10 +190,22 @@ public class SemanticPass extends VisitorAdaptor {
     	typeGlobalVar=type.struct;
     }
    
+//    Designator ::= (Designator) DesignatorName DesignatorList;
+//
+//    DesignatorName ::= (DesignatorName) IDENT:designatorName;
+//
+//    DesignatorList ::= (DesignatorListDeclarationMultiple) DesignatorList DesignatorElement    
+//    				|
+//    				(NoDesignatorListDeclarationMultiple)
+//    				;
+//
+//    DesignatorElement ::=(DesignatorElementWithDot) DOT IDENT:elementWithDotName  
+//    			|
+//    			 (DesignatorElementSquar) LSQUAREB Expr RSQUAREB 
+//    			 ;
+//    
     
-    
-    
-
+//Tacka.x=2;
     
     public void visit (DesignatorElementWithDot elementWithDot) {
    
@@ -205,15 +224,22 @@ public class SemanticPass extends VisitorAdaptor {
     	
     	
     	if(myLeft == null)
-    		elementWithDot.obj = Tab.noObj; //NZM STA SAM POSTIGLA SA OVIM
+    		elementWithDot.obj = Tab.noObj; 
 		else {
-			if(myLeft.getType().getKind() != Struct.Class) {
+			if(!myLeft.getType().equals(recordType)) {
 				report_error("Greska: designator nije record ", elementWithDot);
 			}
-			else {			
-				Obj helper = Tab.currentScope().getOuter().getLocals().searchKey(elementWithDot.getElementWithDotName());
-				if(helper  == null )
+			else {	
+				Obj help =myLeft.getType().getMembersTable().searchKey(elementWithDot.getElementWithDotName());
+				if(help==null) {
 					report_error("Greska: ne postoji polje/metoda " , elementWithDot);
+				   elementWithDot.obj = Tab.noObj;
+				   
+			}
+				else {
+					myLeft=Tab.find(elementWithDot.getElementWithDotName());
+					elementWithDot.obj=Tab.find(elementWithDot.getElementWithDotName());
+				}
 			}
 		}
     }
@@ -232,26 +258,18 @@ public class SemanticPass extends VisitorAdaptor {
 		else
 			myLeft=parent.getDesignatorList().obj;
     	
+//    	DesignatorElement ::=(DesignatorElementWithDot) DOT IDENT:elementWithDotName  
+//    			|
+//    			 (DesignatorElementSquar) LSQUAREB Expr RSQUAREB 
+//    			 ;  	
     	if(myLeft == null) 
     		elementSquare.obj = Tab.noObj;
 		else {
-			if(elementSquare.getExpr().struct.getKind() == Struct.Array) {
-				
-				Struct element = elementSquare.getExpr().struct.getElemType();
-				
-				while(element.getKind() == Struct.Array) {
-					element=element.getElemType();
-				}
-				
-				if(element.getKind() != Struct.Int)
-					report_error("Greska: expr mora biti int", elementSquare);
-				
-			}
-			else if(elementSquare.getExpr().struct.getKind() != Struct.Int)
+			 if(elementSquare.getExpr().struct.getKind() != Struct.Int)
 				report_error("Greska: expr mora biti int", elementSquare);
 			
 			if(myLeft.getType().getKind() == Struct.Array) 
-				myLeft = new Obj(Obj.Elem, "_elementNiza", myLeft.getType().getElemType());
+				elementSquare.obj = new Obj(Obj.Elem, "_elementNiza", myLeft.getType().getElemType());
 			else {
 				report_error("Greska: " +" nije niz ", elementSquare);
 				elementSquare.obj = Tab.noObj;
@@ -555,7 +573,8 @@ public class SemanticPass extends VisitorAdaptor {
 			}
 			
 		}
-		else if (!assignment.getAssignmentStatement().struct.assignableTo(designator.getType())) {
+			
+		else if (assignment.getAssignmentStatement().struct.getKind() != assignment.getDesignator().obj.getKind()) {
 			report_error("Greska: Ne mozete dodeliti jedan tip drugom, nisu kompatibilni", assignment);
 		}
 		
