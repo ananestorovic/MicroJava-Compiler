@@ -88,7 +88,7 @@ public class SemanticPass extends VisitorAdaptor {
     
   
     
-    //NEMAM BAS IDEJU KAKO BIH OVO :(
+ 
     public void visit(RecordName recordName){
     	recordName.obj = Tab.insert(Obj.Type, recordName.getRecordName(), recordType);
     	Tab.openScope();
@@ -113,9 +113,9 @@ public class SemanticPass extends VisitorAdaptor {
 							+ "bez argumenata!",  methodTypeName);
 				}
 			}
-			else if (!returnFound && !methodReturnType.equals(Tab.noType)) {
-				report_error("Greska: Ako metoda nije tipa void, mora imati iskaz return unutar svog tela!", methodTypeName);
-			}
+//			else if (!returnFound && !methodReturnType.equals(Tab.noType)) {
+//				report_error("Greska: Ako metoda nije tipa void, mora imati iskaz return unutar svog tela!", methodTypeName);
+//			}
 			
 			obj = Tab.insert(Obj.Meth, nameMethod, methodReturnType);
 			Tab.openScope();
@@ -190,22 +190,7 @@ public class SemanticPass extends VisitorAdaptor {
     	typeGlobalVar=type.struct;
     }
    
-//    Designator ::= (Designator) DesignatorName DesignatorList;
-//
-//    DesignatorName ::= (DesignatorName) IDENT:designatorName;
-//
-//    DesignatorList ::= (DesignatorListDeclarationMultiple) DesignatorList DesignatorElement    
-//    				|
-//    				(NoDesignatorListDeclarationMultiple)
-//    				;
-//
-//    DesignatorElement ::=(DesignatorElementWithDot) DOT IDENT:elementWithDotName  
-//    			|
-//    			 (DesignatorElementSquar) LSQUAREB Expr RSQUAREB 
-//    			 ;
-//    
-    
-//Tacka.x=2;
+
     
     public void visit (DesignatorElementWithDot elementWithDot) {
    
@@ -257,11 +242,7 @@ public class SemanticPass extends VisitorAdaptor {
 		}
 		else
 			myLeft=parent.getDesignatorList().obj;
-    	
-//    	DesignatorElement ::=(DesignatorElementWithDot) DOT IDENT:elementWithDotName  
-//    			|
-//    			 (DesignatorElementSquar) LSQUAREB Expr RSQUAREB 
-//    			 ;  	
+  			 	
     	if(myLeft == null) 
     		elementSquare.obj = Tab.noObj;
 		else {
@@ -290,6 +271,7 @@ public class SemanticPass extends VisitorAdaptor {
     
     public void visit(DesignatorName designatorName) {
     	designatorName.obj = Tab.find(designatorName.getDesignatorName());
+    
     }
     
     public void visit(Designator designator) {
@@ -323,7 +305,7 @@ public class SemanticPass extends VisitorAdaptor {
     	}
     	//dodati Term i Factor moraju biti tipa int
     	
-			mulopList.struct = mulopList.getFactor().struct;	
+			mulopList.struct = mulopList.getMulopList().struct;	 //nzm
     
     }
     
@@ -338,7 +320,7 @@ public class SemanticPass extends VisitorAdaptor {
     
     public void visit(AddopListDecl addopList) {
     	if(!addopList.getTerm().struct.equals(addopList.getAddopList().struct)) {
-    		report_error("Greska na liniji " + addopList.getLine()+ " : ova addop lista nema parametre istog tipa! ", null);
+    		report_error("Greska: ova addop lista nema parametre istog tipa! ", null);
     	}
     	
     	//dodati Expr i Term moraju biti tipa int.
@@ -347,7 +329,7 @@ public class SemanticPass extends VisitorAdaptor {
     }
     
     public void visit(OptionalMinusAdd minusAdd) {
-    	if(((Expr)minusAdd.getParent()).getAddopList().struct.equals(Tab.intType)) {
+    	if(!((Expr)minusAdd.getParent()).getAddopList().struct.equals(Tab.intType)) {
     		report_error("Greska na liniji " + minusAdd.getLine()+" : ne moze stajati minus ispred izraza koji nije int!", null);
     	}	
     }
@@ -427,7 +409,6 @@ public class SemanticPass extends VisitorAdaptor {
 			report_error("Greska: Iskaz break se moze koristiti samo unutar do-while petlje", breakStatment);
 		}
 		
-		//treba li da naznacim neki prekid ili da dekrementiram do?
 	}
 	
 
@@ -436,7 +417,6 @@ public class SemanticPass extends VisitorAdaptor {
 			report_error("Greska: Iskaz continue se moze koristiti samo unutar do-while petlje", continueStatament);
 		}
 		
-		//treba li da naznacim neki prekid ili da dekrementiram do?
 	}
 
 	public void visit(ReturnExpr returnExpr) {
@@ -615,7 +595,7 @@ public class SemanticPass extends VisitorAdaptor {
 		
 		if (obj == Tab.noObj || obj.getLevel() == 0) {
 			Obj inserted = Tab.insert(Obj.Var, formParsDeclVar.getNameForm(),
-					formParsDeclVar.getFormParsType().struct);
+					formParsDeclVar.getFormParsType().getType().struct);
 			
 			inserted.setFpPos(Tab.currentScope.getnVars());
 			currentMethodParams.add(inserted);
@@ -779,12 +759,19 @@ public class SemanticPass extends VisitorAdaptor {
     	
  ////////////PROVERI OVO!!!
     	
-    	if(designatorWithActPars.getOptionalActPars() instanceof NoOptionalActParsDecl)
-			return;
-    	if(currentMethod.getKind() != Obj.Meth) {
-    		report_error("Greska na liniji " + designatorWithActPars.getLine()+" : ovaj parametar je trebalo da bude metoda", designatorWithActPars);
-			return;
-		}
+    	if(designatorWithActPars.getDesignator().obj.getKind() != Obj.Meth) {
+    		report_error("Greska: Metoda ne postoji!", designatorWithActPars);
+    	}
+    	else {
+    		//
+    	}
+    	
+//    	if(designatorWithActPars.getOptionalActPars() instanceof NoOptionalActParsDecl)
+//			return;
+//    	if(currentMethod.getKind() != Obj.Meth) {
+//    		report_error("Greska na liniji " + designatorWithActPars.getLine()+" : ovaj parametar je trebalo da bude metoda", designatorWithActPars);
+//			return;
+//		}
     	
     }
     
