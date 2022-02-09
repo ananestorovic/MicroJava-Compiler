@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import rs.ac.bg.etf.pp1.ast.*;
 import rs.etf.pp1.symboltable.*;
 import rs.etf.pp1.symboltable.concepts.*;
+import rs.etf.pp1.symboltable.structure.SymbolDataStructure;
 
 public class SemanticPass extends VisitorAdaptor {
 
@@ -19,7 +20,6 @@ public class SemanticPass extends VisitorAdaptor {
 	boolean errorDetected = false;
 	int nVars;
 	public static Struct boolType;
-	public static Struct recordType;
 	List<Expr> listOfActParams = new ArrayList<>();
 	int doStatement = 0;
 	Struct methodReturnType = Tab.noType;
@@ -29,6 +29,7 @@ public class SemanticPass extends VisitorAdaptor {
 	Boolean mainFound = false;
 	int valueOfConst;
 	int constVarCount = 0;
+	Boolean inRecord = false;
 
 	Logger log = Logger.getLogger(getClass());
 
@@ -55,15 +56,8 @@ public class SemanticPass extends VisitorAdaptor {
 		Tab.insert(Obj.Type, "bool", boolType);
 	}
 
-	private void addRecordTypeInSymTab() {
-		recordType = new Struct(Struct.Class);
-		recordType.setElementType(Tab.noType);
-		Tab.insert(Obj.Type, "record", recordType);
-	}
-
 	public void visit(ProgramName programName) {
 		programName.obj = Tab.insert(Obj.Prog, programName.getProgramName(), Tab.noType);
-		addRecordTypeInSymTab();
 		addBoolTypeInSymTab();
 		Tab.openScope();
 	}
@@ -81,13 +75,17 @@ public class SemanticPass extends VisitorAdaptor {
 	}
 
 	public void visit(RecordName recordName) {
+		Struct recordType = new Struct(Struct.Class);
+		recordType.setElementType(Tab.noType);
 		recordName.obj = Tab.insert(Obj.Type, recordName.getRecordName(), recordType);
 		Tab.openScope();
+		inRecord = true;
 	}
 
 	public void visit(RecordDecl recordDecl) {
 		Tab.chainLocalSymbols(recordDecl.getRecordName().obj.getType());
 		Tab.closeScope();
+		inRecord = false;
 	}
 
 	public void visit(MethodDeclTypeName methodTypeName) {
@@ -193,7 +191,7 @@ public class SemanticPass extends VisitorAdaptor {
 		if (myLeft == null)
 			elementWithDot.obj = Tab.noObj;
 		else {
-			if (!myLeft.getType().equals(recordType)) {
+			if (myLeft.getType().getKind() != Struct.Class) {
 				report_error("Greska: designator nije record ", elementWithDot);
 			} else {
 				Obj help = myLeft.getType().getMembersTable().searchKey(elementWithDot.getElementWithDotName());
@@ -604,10 +602,18 @@ public class SemanticPass extends VisitorAdaptor {
 //VarDecl
 
 	public void visit(OnlyVariableDecl localVar) {
-		Obj obj = Tab.find(localVar.getVarName());
+		Obj obj = Tab.noObj;
+		if (inRecord) {
+			SymbolDataStructure locals =  Tab.currentScope().getLocals();
+			if (locals != null) {
+				obj = locals.searchKey(localVar.getVarName());
+				if (obj == null) obj = Tab.noObj;
+			}
+		} else {
+			obj = Tab.find(localVar.getVarName());
+		}
 		if (obj != Tab.noObj)
 			report_error("Greska: Vec deklarisana!", localVar);
-
 		else {
 			varDeclCount++;
 
@@ -618,7 +624,16 @@ public class SemanticPass extends VisitorAdaptor {
 	}
 
 	public void visit(VariableDecl localArr) {
-		Obj obj = Tab.find(localArr.getVarName());
+		Obj obj = Tab.noObj;
+		if (inRecord) {
+			SymbolDataStructure locals =  Tab.currentScope().getLocals();
+			if (locals != null) {
+				obj = locals.searchKey(localArr.getVarName());
+				if (obj == null) obj = Tab.noObj;
+			}
+		} else {
+			obj = Tab.find(localArr.getVarName());
+		}
 		if (obj != Tab.noObj)
 			report_error("Greska: Vec deklarisano!", localArr);
 		else {
