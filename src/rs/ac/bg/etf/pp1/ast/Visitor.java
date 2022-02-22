@@ -1,6 +1,6 @@
 // generated with ast extension for cup
 // version 0.8
-// 27/0/2022 19:47:41
+// 22/1/2022 4:49:20
 
 
 package rs.ac.bg.etf.pp1.ast;
@@ -9,6 +9,7 @@ public interface Visitor {
 
     public void visit(Unmatched Unmatched);
     public void visit(ReturnType ReturnType);
+    public void visit(Proba Proba);
     public void visit(Mulop Mulop);
     public void visit(GroupDeclList GroupDeclList);
     public void visit(Matched Matched);
@@ -41,15 +42,17 @@ public interface Visitor {
     public void visit(DesignatorStatement DesignatorStatement);
     public void visit(Statement Statement);
     public void visit(CondFact CondFact);
-    public void visit(DesignatorFunctionCall DesignatorFunctionCall);
     public void visit(DesignatorElement DesignatorElement);
+    public void visit(DesignatorFunctionCall DesignatorFunctionCall);
     public void visit(MethodDeclList MethodDeclList);
     public void visit(OptionalMinus OptionalMinus);
     public void visit(GroupDecl GroupDecl);
     public void visit(FormPars FormPars);
+    public void visit(ConditionListLeft ConditionListLeft);
     public void visit(NoConditionListDecl NoConditionListDecl);
     public void visit(ConditionListDecl ConditionListDecl);
     public void visit(Condition Condition);
+    public void visit(CondTermListLeft CondTermListLeft);
     public void visit(NoCondTermListDecl NoCondTermListDecl);
     public void visit(CondTermListDecl CondTermListDecl);
     public void visit(CondTerm CondTerm);
@@ -64,6 +67,9 @@ public interface Visitor {
     public void visit(OptionalPrintParamm OptionalPrintParamm);
     public void visit(DoStatementStart DoStatementStart);
     public void visit(AssignmentStatement AssignmentStatement);
+    public void visit(WhileStart WhileStart);
+    public void visit(ElseStart ElseStart);
+    public void visit(IfWithCondition IfWithCondition);
     public void visit(MatchedDerived1 MatchedDerived1);
     public void visit(DoStatement DoStatement);
     public void visit(ContinueStatament ContinueStatament);
@@ -94,6 +100,7 @@ public interface Visitor {
     public void visit(DesignatorListDeclarationMultiple DesignatorListDeclarationMultiple);
     public void visit(DesignatorName DesignatorName);
     public void visit(Designator Designator);
+    public void visit(ProbaDerived1 ProbaDerived1);
     public void visit(NoNewFactorExprOpt NoNewFactorExprOpt);
     public void visit(NewFactorExprOpt NewFactorExprOpt);
     public void visit(ExprFactor ExprFactor);

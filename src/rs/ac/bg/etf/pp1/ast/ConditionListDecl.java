@@ -1,28 +1,28 @@
 // generated with ast extension for cup
 // version 0.8
-// 27/0/2022 19:47:41
+// 22/1/2022 4:49:20
 
 
 package rs.ac.bg.etf.pp1.ast;
 
 public class ConditionListDecl extends ConditionList {
 
-    private CondTerm CondTerm;
+    private ConditionListLeft ConditionListLeft;
     private ConditionList ConditionList;
 
-    public ConditionListDecl (CondTerm CondTerm, ConditionList ConditionList) {
-        this.CondTerm=CondTerm;
-        if(CondTerm!=null) CondTerm.setParent(this);
+    public ConditionListDecl (ConditionListLeft ConditionListLeft, ConditionList ConditionList) {
+        this.ConditionListLeft=ConditionListLeft;
+        if(ConditionListLeft!=null) ConditionListLeft.setParent(this);
         this.ConditionList=ConditionList;
         if(ConditionList!=null) ConditionList.setParent(this);
     }
 
-    public CondTerm getCondTerm() {
-        return CondTerm;
+    public ConditionListLeft getConditionListLeft() {
+        return ConditionListLeft;
     }
 
-    public void setCondTerm(CondTerm CondTerm) {
-        this.CondTerm=CondTerm;
+    public void setConditionListLeft(ConditionListLeft ConditionListLeft) {
+        this.ConditionListLeft=ConditionListLeft;
     }
 
     public ConditionList getConditionList() {
@@ -38,18 +38,18 @@ public class ConditionListDecl extends ConditionList {
     }
 
     public void childrenAccept(Visitor visitor) {
-        if(CondTerm!=null) CondTerm.accept(visitor);
+        if(ConditionListLeft!=null) ConditionListLeft.accept(visitor);
         if(ConditionList!=null) ConditionList.accept(visitor);
     }
 
     public void traverseTopDown(Visitor visitor) {
         accept(visitor);
-        if(CondTerm!=null) CondTerm.traverseTopDown(visitor);
+        if(ConditionListLeft!=null) ConditionListLeft.traverseTopDown(visitor);
         if(ConditionList!=null) ConditionList.traverseTopDown(visitor);
     }
 
     public void traverseBottomUp(Visitor visitor) {
-        if(CondTerm!=null) CondTerm.traverseBottomUp(visitor);
+        if(ConditionListLeft!=null) ConditionListLeft.traverseBottomUp(visitor);
         if(ConditionList!=null) ConditionList.traverseBottomUp(visitor);
         accept(visitor);
     }
@@ -59,8 +59,8 @@ public class ConditionListDecl extends ConditionList {
         buffer.append(tab);
         buffer.append("ConditionListDecl(\n");
 
-        if(CondTerm!=null)
-            buffer.append(CondTerm.toString("  "+tab));
+        if(ConditionListLeft!=null)
+            buffer.append(ConditionListLeft.toString("  "+tab));
         else
             buffer.append(tab+"  null");
         buffer.append("\n");

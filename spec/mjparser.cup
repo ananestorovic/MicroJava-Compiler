@@ -103,7 +103,7 @@ terminal RBRACE;
 
 
 nonterminal rs.etf.pp1.symboltable.concepts.Obj  Program, ProgramName, Designator, DesignatorList, MethodTypeName, NewFactorExprOptional, RecordDecl, RecordName;
-nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement, Matched, Unmatched, OptionalActPars, DesignatorElement, Variable, DesignatorName;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement, Matched, OptionalActPars, DesignatorElement, Variable, DesignatorName;
 nonterminal GroupDeclList;
 nonterminal GroupDecl;
 nonterminal ConstDecl;
@@ -121,8 +121,8 @@ nonterminal Mulop;
 nonterminal Addop;
 nonterminal Relop;
 nonterminal Label;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, DesignatorFunctionCall, MulopList, Factor, AddopList, DesignatorStatement, ReturnType,  AssignmentStatement;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct OptionalMinus, Expr, CondFact, CondTerm, CondTermList, Condition, ConditionList, Assignop, ConstDeclVal, FormParsType;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, DesignatorFunctionCall, MulopList, Factor, AddopList, DesignatorStatement, ReturnType,  AssignmentStatement, IfWithCondition, Unmatched;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct OptionalMinus, Expr, CondFact, CondTerm, CondTermList, Condition, ConditionList, Assignop, ConstDeclVal, FormParsType, CondTermListLeft, ConditionListLeft;
 nonterminal ActPars;
 nonterminal ActParsList;
 nonterminal Statements;
@@ -132,6 +132,7 @@ nonterminal OptionalSquareDesignator;
 nonterminal VarDeclListModif;
 nonterminal DoStatementStart;
 nonterminal OptionalFormalParams;
+nonterminal Proba, ElseStart, WhileStart;
 
 
 
@@ -269,7 +270,7 @@ OptionalMinus ::= (OptionalMinusAdd) MINUS
 				(NoOptionalMinusAdd) /* epsilon */
 				;
 				
-Term ::= (Term) MulopList;
+Term ::= (Term) MulopList; 
 					
 AddopList	::= (AddopListDecl) AddopList Addop Term
 				|
@@ -296,23 +297,25 @@ Factor ::= (FactorDesignator) DesignatorFunctionCall
 				(ExprFactor) LPAREN Expr RPAREN
 				;
 
-NewFactorExprOptional ::= (NewFactorExprOpt) LSQUAREB Expr RSQUAREB
+NewFactorExprOptional ::= (NewFactorExprOpt) LSQUAREB  Expr RSQUAREB
 						|
 						(NoNewFactorExprOpt)  /* epsilon */
 					;
+					
+Proba ::= LSQUAREB;
 				
 Designator ::= (Designator) DesignatorName DesignatorList;
 
 DesignatorName ::= (DesignatorName) IDENT:designatorName;
 
-DesignatorList ::= (DesignatorListDeclarationMultiple) DesignatorList DesignatorElement    
+DesignatorList ::= (DesignatorListDeclarationMultiple) DesignatorList  DesignatorElement  
 				|
 				(NoDesignatorListDeclarationMultiple)
 				;
 
 DesignatorElement ::=(DesignatorElementWithDot) DOT IDENT:elementWithDotName  
 			|
-			 (DesignatorElementSquar) LSQUAREB Expr RSQUAREB 
+			 (DesignatorElementSquar) Proba Expr RSQUAREB 
 			 ;
 
 DesignatorFunctionCall ::= (DesignatorWithActPars) Designator LPAREN OptionalActPars RPAREN
@@ -344,9 +347,9 @@ Statement ::= (MatchedStmt) Matched
 		            (UnmatchedStmt) Unmatched
 		            ; 
 
-Unmatched ::= (UnmatchedIf) IF LPAREN Condition RPAREN Statement
+Unmatched ::= (UnmatchedIf) IfWithCondition Statement
 		 	|
-		 	(UnmatchedIfElse) IF LPAREN Condition  RPAREN Matched ELSE Unmatched
+		 	(UnmatchedIfElse) IfWithCondition Matched ElseStart Unmatched
 		 	;
 		 
 
@@ -360,7 +363,7 @@ Matched ::= (DesignatorStatement1) DesignatorStatement SEMI
 		   |
 		   (ReturnNoExpr) RETURN SEMI
 		   |
-		   (MatchedStatement) IF LPAREN Condition RPAREN Matched ELSE Matched
+		   (MatchedStatement) IfWithCondition Matched ElseStart Matched
 		   | 
 		   (StatementsDecl) Statements
 		   |
@@ -368,10 +371,15 @@ Matched ::= (DesignatorStatement1) DesignatorStatement SEMI
 		   |
 		   (ContinueStatament) CONTINUE SEMI
 		   |
-		   (DoStatement) DoStatementStart Statement WHILE LPAREN Condition RPAREN SEMI
+		   (DoStatement) DoStatementStart Statement WhileStart LPAREN Condition RPAREN SEMI
 		   |
 		   error SEMI:l {: parser.report_error("Sintaksa greska na liniji " + lleft, null); :}
 		   ;
+
+		   
+IfWithCondition ::= (IfWithCondition) IF LPAREN Condition RPAREN;
+ElseStart ::= (ElseStart) ELSE;
+WhileStart ::= (WhileStart) WHILE;
 
 AssignmentStatement::= (AssignmentStatement) Assignop  Expr;
 
@@ -399,13 +407,18 @@ CondFact ::= (ConditionFact) Expr
 			
 CondTerm ::= (CondTerm) CondTermList;
 
-CondTermList ::= (CondTermListDecl) CondFact LOGICALAND CondTermList
+
+CondTermList ::= (CondTermListDecl) CondTermListLeft CondTermList
 			|
 			(NoCondTermListDecl) CondFact
 			;
 			
+CondTermListLeft ::= (CondTermListLeft) CondFact LOGICALAND;
+			
 Condition ::= (Condition) ConditionList;
-ConditionList ::= (ConditionListDecl) CondTerm LOGICALOR ConditionList
+ConditionList ::= (ConditionListDecl) ConditionListLeft ConditionList
 				|
 				(NoConditionListDecl) CondTerm;
+				
+ConditionListLeft ::= (ConditionListLeft) CondTerm LOGICALOR ;
 			

@@ -1,0 +1,25 @@
+program Test
+	int i, j;
+	{
+		void main() {
+		
+		i=0;
+		j=0;
+			do {
+			
+			i++;
+			if(i==2) continue;
+			print(i);
+
+			
+
+				do {
+				j++;
+				
+				if(j==2)	continue;
+				print(j);
+				}  while(j<3);
+
+			}while(i<3);
+		}
+	}

@@ -103,7 +103,7 @@ terminal RBRACE;
 
 
 nonterminal rs.etf.pp1.symboltable.concepts.Obj  Program, ProgramName, Designator, DesignatorList, MethodTypeName, NewFactorExprOptional, RecordDecl, RecordName;
-nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement, Matched, Unmatched, OptionalActPars, DesignatorElement, Variable, DesignatorName;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement, Matched, OptionalActPars, DesignatorElement, Variable, DesignatorName;
 nonterminal GroupDeclList GroupDeclList;
 nonterminal GroupDecl GroupDecl;
 nonterminal ConstDecl ConstDecl;
@@ -121,8 +121,8 @@ nonterminal Mulop Mulop;
 nonterminal Addop Addop;
 nonterminal Relop Relop;
 nonterminal Label Label;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, DesignatorFunctionCall, MulopList, Factor, AddopList, DesignatorStatement, ReturnType,  AssignmentStatement;
-nonterminal rs.etf.pp1.symboltable.concepts.Struct OptionalMinus, Expr, CondFact, CondTerm, CondTermList, Condition, ConditionList, Assignop, ConstDeclVal, FormParsType;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Type, Term, DesignatorFunctionCall, MulopList, Factor, AddopList, DesignatorStatement, ReturnType,  AssignmentStatement, IfWithCondition, Unmatched;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct OptionalMinus, Expr, CondFact, CondTerm, CondTermList, Condition, ConditionList, Assignop, ConstDeclVal, FormParsType, CondTermListLeft, ConditionListLeft;
 nonterminal ActPars ActPars;
 nonterminal ActParsList ActParsList;
 nonterminal Statements Statements;
@@ -132,6 +132,9 @@ nonterminal OptionalSquareDesignator OptionalSquareDesignator;
 nonterminal VarDeclListModif VarDeclListModif;
 nonterminal DoStatementStart DoStatementStart;
 nonterminal OptionalFormalParams OptionalFormalParams;
+nonterminal Proba Proba;
+nonterminal ElseStart ElseStart;
+nonterminal WhileStart WhileStart;
 
 
 
@@ -269,7 +272,7 @@ OptionalMinus ::= (OptionalMinusAdd) MINUS {: RESULT=new OptionalMinusAdd(); :}
 				(NoOptionalMinusAdd) {: RESULT=new NoOptionalMinusAdd(); :} /* epsilon */
 				;
 				
-Term ::= (Term) MulopList:M1 {: RESULT=new Term(M1); RESULT.setLine(M1left); :};
+Term ::= (Term) MulopList:M1 {: RESULT=new Term(M1); RESULT.setLine(M1left); :}; 
 					
 AddopList	::= (AddopListDecl) AddopList:A1 Addop:A2 Term:T3 {: RESULT=new AddopListDecl(A1, A2, T3); RESULT.setLine(A1left); :}
 				|
@@ -296,23 +299,25 @@ Factor ::= (FactorDesignator) DesignatorFunctionCall:D1 {: RESULT=new FactorDesi
 				(ExprFactor) LPAREN Expr:E1 RPAREN {: RESULT=new ExprFactor(E1); RESULT.setLine(E1left); :}
 				;
 
-NewFactorExprOptional ::= (NewFactorExprOpt) LSQUAREB Expr:E1 RSQUAREB {: RESULT=new NewFactorExprOpt(E1); RESULT.setLine(E1left); :}
+NewFactorExprOptional ::= (NewFactorExprOpt) LSQUAREB  Expr:E1 RSQUAREB {: RESULT=new NewFactorExprOpt(E1); RESULT.setLine(E1left); :}
 						|
 						(NoNewFactorExprOpt) {: RESULT=new NoNewFactorExprOpt(); :}  /* epsilon */
 					;
+					
+Proba ::= LSQUAREB {: RESULT=new ProbaDerived1(); :};
 				
 Designator ::= (Designator) DesignatorName:D1 DesignatorList:D2 {: RESULT=new Designator(D1, D2); RESULT.setLine(D1left); :};
 
 DesignatorName ::= (DesignatorName) IDENT:designatorName {: RESULT=new DesignatorName(designatorName); RESULT.setLine(designatorNameleft); :};
 
-DesignatorList ::= (DesignatorListDeclarationMultiple) DesignatorList:D1 DesignatorElement:D2 {: RESULT=new DesignatorListDeclarationMultiple(D1, D2); RESULT.setLine(D1left); :}    
+DesignatorList ::= (DesignatorListDeclarationMultiple) DesignatorList:D1  DesignatorElement:D2 {: RESULT=new DesignatorListDeclarationMultiple(D1, D2); RESULT.setLine(D1left); :}  
 				|
 				(NoDesignatorListDeclarationMultiple) {: RESULT=new NoDesignatorListDeclarationMultiple(); :}
 				;
 
 DesignatorElement ::=(DesignatorElementWithDot) DOT IDENT:elementWithDotName {: RESULT=new DesignatorElementWithDot(elementWithDotName); RESULT.setLine(elementWithDotNameleft); :}  
 			|
-			 (DesignatorElementSquar) LSQUAREB Expr:E1 RSQUAREB {: RESULT=new DesignatorElementSquar(E1); RESULT.setLine(E1left); :} 
+			 (DesignatorElementSquar) Proba:P1 Expr:E2 RSQUAREB {: RESULT=new DesignatorElementSquar(P1, E2); RESULT.setLine(P1left); :} 
 			 ;
 
 DesignatorFunctionCall ::= (DesignatorWithActPars) Designator:D1 LPAREN OptionalActPars:O2 RPAREN {: RESULT=new DesignatorWithActPars(D1, O2); RESULT.setLine(D1left); :}
@@ -344,9 +349,9 @@ Statement ::= (MatchedStmt) Matched:M1 {: RESULT=new MatchedStmt(M1); RESULT.set
 		            (UnmatchedStmt) Unmatched:U1 {: RESULT=new UnmatchedStmt(U1); RESULT.setLine(U1left); :}
 		            ; 
 
-Unmatched ::= (UnmatchedIf) IF LPAREN Condition:C1 RPAREN Statement:S2 {: RESULT=new UnmatchedIf(C1, S2); RESULT.setLine(C1left); :}
+Unmatched ::= (UnmatchedIf) IfWithCondition:I1 Statement:S2 {: RESULT=new UnmatchedIf(I1, S2); RESULT.setLine(I1left); :}
 		 	|
-		 	(UnmatchedIfElse) IF LPAREN Condition:C1  RPAREN Matched:M2 ELSE Unmatched:U3 {: RESULT=new UnmatchedIfElse(C1, M2, U3); RESULT.setLine(C1left); :}
+		 	(UnmatchedIfElse) IfWithCondition:I1 Matched:M2 ElseStart:E3 Unmatched:U4 {: RESULT=new UnmatchedIfElse(I1, M2, E3, U4); RESULT.setLine(I1left); :}
 		 	;
 		 
 
@@ -360,7 +365,7 @@ Matched ::= (DesignatorStatement1) DesignatorStatement:D1 SEMI {: RESULT=new Des
 		   |
 		   (ReturnNoExpr) RETURN SEMI {: RESULT=new ReturnNoExpr(); :}
 		   |
-		   (MatchedStatement) IF LPAREN Condition:C1 RPAREN Matched:M2 ELSE Matched:M3 {: RESULT=new MatchedStatement(C1, M2, M3); RESULT.setLine(C1left); :}
+		   (MatchedStatement) IfWithCondition:I1 Matched:M2 ElseStart:E3 Matched:M4 {: RESULT=new MatchedStatement(I1, M2, E3, M4); RESULT.setLine(I1left); :}
 		   | 
 		   (StatementsDecl) Statements:S1 {: RESULT=new StatementsDecl(S1); RESULT.setLine(S1left); :}
 		   |
@@ -368,10 +373,15 @@ Matched ::= (DesignatorStatement1) DesignatorStatement:D1 SEMI {: RESULT=new Des
 		   |
 		   (ContinueStatament) CONTINUE SEMI {: RESULT=new ContinueStatament(); :}
 		   |
-		   (DoStatement) DoStatementStart:D1 Statement:S2 WHILE LPAREN Condition:C3 RPAREN SEMI {: RESULT=new DoStatement(D1, S2, C3); RESULT.setLine(D1left); :}
+		   (DoStatement) DoStatementStart:D1 Statement:S2 WhileStart:W3 LPAREN Condition:C4 RPAREN SEMI {: RESULT=new DoStatement(D1, S2, W3, C4); RESULT.setLine(D1left); :}
 		   |
 		   error SEMI:l {: parser.report_error("Sintaksa greska na liniji " + lleft, null); :} {: RESULT=new MatchedDerived1(); :}
 		   ;
+
+		   
+IfWithCondition ::= (IfWithCondition) IF LPAREN Condition:C1 RPAREN {: RESULT=new IfWithCondition(C1); RESULT.setLine(C1left); :};
+ElseStart ::= (ElseStart) ELSE {: RESULT=new ElseStart(); :};
+WhileStart ::= (WhileStart) WHILE {: RESULT=new WhileStart(); :};
 
 AssignmentStatement::= (AssignmentStatement) Assignop:A1  Expr:E2 {: RESULT=new AssignmentStatement(A1, E2); RESULT.setLine(A1left); :};
 
@@ -399,13 +409,18 @@ CondFact ::= (ConditionFact) Expr:E1 {: RESULT=new ConditionFact(E1); RESULT.set
 			
 CondTerm ::= (CondTerm) CondTermList:C1 {: RESULT=new CondTerm(C1); RESULT.setLine(C1left); :};
 
-CondTermList ::= (CondTermListDecl) CondFact:C1 LOGICALAND CondTermList:C2 {: RESULT=new CondTermListDecl(C1, C2); RESULT.setLine(C1left); :}
+
+CondTermList ::= (CondTermListDecl) CondTermListLeft:C1 CondTermList:C2 {: RESULT=new CondTermListDecl(C1, C2); RESULT.setLine(C1left); :}
 			|
 			(NoCondTermListDecl) CondFact:C1 {: RESULT=new NoCondTermListDecl(C1); RESULT.setLine(C1left); :}
 			;
 			
+CondTermListLeft ::= (CondTermListLeft) CondFact:C1 LOGICALAND {: RESULT=new CondTermListLeft(C1); RESULT.setLine(C1left); :};
+			
 Condition ::= (Condition) ConditionList:C1 {: RESULT=new Condition(C1); RESULT.setLine(C1left); :};
-ConditionList ::= (ConditionListDecl) CondTerm:C1 LOGICALOR ConditionList:C2 {: RESULT=new ConditionListDecl(C1, C2); RESULT.setLine(C1left); :}
+ConditionList ::= (ConditionListDecl) ConditionListLeft:C1 ConditionList:C2 {: RESULT=new ConditionListDecl(C1, C2); RESULT.setLine(C1left); :}
 				|
 				(NoConditionListDecl) CondTerm:C1 {: RESULT=new NoConditionListDecl(C1); RESULT.setLine(C1left); :};
+				
+ConditionListLeft ::= (ConditionListLeft) CondTerm:C1 LOGICALOR {: RESULT=new ConditionListLeft(C1); RESULT.setLine(C1left); :} ;
 			
